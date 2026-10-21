@@ -50,16 +50,19 @@ export const SupabaseConfigModal: React.FC<Props> = ({ isOpen, onClose, onSaved 
         <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1.5">
-              <Link2 className="w-3.5 h-3.5 text-emerald-400" /> URL del Proyecto Supabase
+              <Link2 className="w-3.5 h-3.5 text-emerald-400" /> URL de Supabase (Cloud o CLI Local)
             </label>
             <input
-              type="url"
+              type="text"
               required
-              placeholder="https://xxxxxxxxxxxx.supabase.co"
+              placeholder="https://xyz.supabase.co  o  http://127.0.0.1:54321"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 text-sm"
+              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 text-sm font-mono"
             />
+            <p className="text-[11px] text-slate-500 mt-1">
+              Para <b>Supabase Cloud</b>: usa la URL de tu dashboard. Para <b>CLI Local (Docker)</b>: usa <code className="text-emerald-400">http://127.0.0.1:54321</code>
+            </p>
           </div>
 
           <div>

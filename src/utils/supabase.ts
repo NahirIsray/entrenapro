@@ -12,10 +12,9 @@ export const getSupabaseConfig = () => {
 
   const isConfigured = Boolean(
     url &&
-    url.startsWith('https://') &&
-    url.includes('supabase.co') &&
+    (url.startsWith('https://') || url.startsWith('http://127.0.0.1') || url.startsWith('http://localhost')) &&
     anonKey &&
-    anonKey.length > 20
+    anonKey.length > 15
   );
 
   return { url, anonKey, isConfigured };

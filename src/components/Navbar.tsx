@@ -53,11 +53,15 @@ export const Navbar: React.FC<Props> = ({
                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
                 : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
             }`}
-            title="Estado de sincronización en la nube con Supabase"
+            title={
+              isConfigured
+                ? 'Conectado a Supabase (Sincronización en tiempo real activa)'
+                : 'Sin conexión a Supabase (Guardando en almacenamiento local del navegador)'
+            }
           >
             <Database className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">
-              {isConfigured ? 'Nube Conectada' : 'Modo Local'}
+              {isConfigured ? 'Supabase Conectado' : 'Conectar Supabase'}
             </span>
             <span
               className={`w-2 h-2 rounded-full ${
