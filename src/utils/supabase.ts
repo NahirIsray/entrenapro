@@ -1,5 +1,8 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
+const DEFAULT_URL = 'https://itijifikbxepkthnyjfm.supabase.co';
+const DEFAULT_KEY = 'sb_publishable_kjLwkjn8VRRoPNVzFA1vLA_0Xp85P1H';
+
 export const getSupabaseConfig = () => {
   const envUrl = import.meta.env.VITE_SUPABASE_URL;
   const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -7,8 +10,8 @@ export const getSupabaseConfig = () => {
   const storedUrl = typeof window !== 'undefined' ? localStorage.getItem('entrenapro_supabase_url') : null;
   const storedKey = typeof window !== 'undefined' ? localStorage.getItem('entrenapro_supabase_anon_key') : null;
 
-  const url = (storedUrl || envUrl || '').trim();
-  const anonKey = (storedKey || envKey || '').trim();
+  const url = (storedUrl || envUrl || DEFAULT_URL).trim();
+  const anonKey = (storedKey || envKey || DEFAULT_KEY).trim();
 
   const isConfigured = Boolean(
     url &&
