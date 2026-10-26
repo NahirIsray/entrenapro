@@ -62,17 +62,14 @@ export interface Student {
   objetivo?: string;
   notas_coach?: string;
   foto_url?: string;
+  username?: string;
+  password?: string;
 }
 
 export interface SetLog {
   serie_index: number;
   kgs: string;
   completado: boolean;
-}
-
-export interface ExerciseSessionLog {
-  ejercicio_id: string;
-  sets: SetLog[];
 }
 
 export interface DayFeedback {
@@ -87,3 +84,18 @@ export interface DayFeedback {
 }
 
 export type UserRole = 'coach' | 'student';
+
+export interface UserProfile {
+  id: string;
+  username: string;
+  password: string;
+  nombre: string;
+  role: UserRole;
+  student_id?: string;
+  email?: string;
+}
+
+export interface AuthSession {
+  user: UserProfile;
+  loginTime: string;
+}

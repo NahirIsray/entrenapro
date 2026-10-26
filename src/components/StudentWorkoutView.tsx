@@ -15,10 +15,12 @@ import {
   Sparkles,
   Trophy,
   Video,
+  MessageCircle,
 } from 'lucide-react';
 import { Routine, RoutineDay, RoutineExerciseItem, Student, DayFeedback } from '../types';
 import { VideoModal } from './VideoModal';
 import { WorkoutLogsMap, FeedbacksMap, SetRecord } from '../utils/storage';
+import { BRAND } from '../constants/brand';
 
 interface Props {
   student: Student;
@@ -585,6 +587,19 @@ export const StudentWorkoutView: React.FC<Props> = ({
             </>
           )}
         </button>
+      </div>
+
+      {/* WhatsApp Coach Support Banner */}
+      <div className="mt-4 text-center">
+        <a
+          href={BRAND.whatsappUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 py-2 px-4 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 text-xs text-slate-400 hover:text-emerald-400 transition"
+        >
+          <MessageCircle className="w-4 h-4 text-emerald-400" />
+          <span>¿Dudas con la técnica o una carga? Escribile a Facu por WhatsApp</span>
+        </a>
       </div>
 
       {/* Video Modal */}

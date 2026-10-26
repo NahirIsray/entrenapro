@@ -4,7 +4,8 @@ import { StudentWorkoutView } from './components/StudentWorkoutView';
 import { CoachDashboard } from './components/CoachDashboard';
 import { RestTimer } from './components/RestTimer';
 import { SupabaseConfigModal } from './components/SupabaseConfigModal';
-import { UserRole, Student, Routine, Exercise, DayFeedback } from './types';
+import { LoginScreen } from './components/auth/LoginScreen';
+import { UserRole, Student, Routine, Exercise, DayFeedback, UserProfile, AuthSession } from './types';
 import {
   getStoredStudents,
   saveStoredStudents,
@@ -16,6 +17,11 @@ import {
   saveStoredLogs,
   getStoredFeedbacks,
   saveStoredFeedbacks,
+  getStoredUsers,
+  saveStoredUsers,
+  getStoredSession,
+  saveStoredSession,
+  clearStoredSession,
   pullAllFromSupabase,
   subscribeToSupabaseRealtime,
   WorkoutLogsMap,
@@ -24,10 +30,8 @@ import {
 } from './utils/storage';
 
 export const App: React.FC = () => {
-  const [role, setRole] = useState<UserRole>(() => {
-    return (localStorage.getItem('entrenapro_role') as UserRole) || 'student';
-  });
-
+  const [session, setSession] = useState<AuthSession | null>(getStoredSession);
+  const [users, setUsers] = useState<UserProfile[]>(getStoredUsers);
   const [students, setStudents] = useState<Student[]>(getStoredStudents);
   const [routines, setRoutines] = useState<Routine[]>(getStoredRoutines);
   const [exercises, setExercises] = useState<Exercise[]>(getStoredExercises);
@@ -35,7 +39,7 @@ export const App: React.FC = () => {
   const [feedbacks, setFeedbacks] = useState<FeedbacksMap>(getStoredFeedbacks);
 
   const [selectedStudentId, setSelectedStudentId] = useState<string>(() => {
-    return localStorage.getItem('entrenapro_selected_student') || 'student_nahir';
+    return session?.user.student_id || 'student_nahir';
   });
 
   const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState<boolean>(false);
@@ -43,6 +47,7 @@ export const App: React.FC = () => {
 
   // Sync with Supabase on mount & real-time
   const refreshAllState = () => {
+    setUsers(getStoredUsers());
     setStudents(getStoredStudents());
     setRoutines(getStoredRoutines());
     setExercises(getStoredExercises());
@@ -58,14 +63,21 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  const handleRoleChange = (newRole: UserRole) => {
-    setRole(newRole);
-    localStorage.setItem('entrenapro_role', newRole);
+  const handleLoginSuccess = (newSession: AuthSession) => {
+    setSession(newSession);
+    saveStoredSession(newSession);
+    if (newSession.user.student_id) {
+      setSelectedStudentId(newSession.user.student_id);
+    }
+  };
+
+  const handleLogout = () => {
+    setSession(null);
+    clearStoredSession();
   };
 
   const handleSelectStudent = (id: string) => {
     setSelectedStudentId(id);
-    localStorage.setItem('entrenapro_selected_student', id);
   };
 
   const handleUpdateLog = (logKey: string, record: SetRecord) => {
@@ -102,33 +114,50 @@ export const App: React.FC = () => {
     saveStoredExercises(updated);
   };
 
-  // Find active student and their assigned routine
-  const activeStudent =
-    students.find((s) => s.id === selectedStudentId) || students[0] || {
-      id: 'student_nahir',
-      nombre: 'Nahir',
-      rutina_activa_id: routines[0]?.id || 'rutina_nahir_01',
-      semana_actual: 1,
-    };
+  const handleUpdateUsers = (updated: UserProfile[]) => {
+    setUsers(updated);
+    saveStoredUsers(updated);
+  };
+
+  // If not authenticated, render Login / Landing screen
+  if (!session) {
+    return (
+      <LoginScreen
+        users={users}
+        onLoginSuccess={handleLoginSuccess}
+      />
+    );
+  }
+
+  const currentUser = session.user;
+  const isCoach = currentUser.role === 'coach';
+
+  // Target student for workout view
+  const activeStudent = isCoach
+    ? students.find((s) => s.id === selectedStudentId) || students[0]
+    : students.find((s) => s.id === currentUser.student_id) || students[0];
 
   const activeRoutine =
-    routines.find((r) => r.id === activeStudent.rutina_activa_id) || routines[0];
+    routines.find((r) => r.alumno_id === activeStudent.id) ||
+    routines.find((r) => r.id === activeStudent.rutina_activa_id) ||
+    routines[0];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-slate-950">
       {/* Top Navbar */}
       <Navbar
-        role={role}
-        onChangeRole={handleRoleChange}
+        role={currentUser.role}
+        currentUser={currentUser}
         students={students}
         selectedStudentId={activeStudent.id}
         onSelectStudent={handleSelectStudent}
         onOpenSupabaseModal={() => setIsSupabaseModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Main Content */}
       <main className="flex-1">
-        {role === 'student' ? (
+        {currentUser.role === 'student' ? (
           activeRoutine ? (
             <StudentWorkoutView
               student={activeStudent}
@@ -149,21 +178,22 @@ export const App: React.FC = () => {
             students={students}
             routines={routines}
             exercises={exercises}
+            users={users}
             logs={logs}
             feedbacks={feedbacks}
             onUpdateStudents={handleUpdateStudents}
             onUpdateRoutines={handleUpdateRoutines}
             onUpdateExercises={handleUpdateExercises}
+            onUpdateUsers={handleUpdateUsers}
             onSelectStudentToTest={(stId) => {
               handleSelectStudent(stId);
-              handleRoleChange('student');
             }}
           />
         )}
       </main>
 
-      {/* Rest Timer (Always present in Student view) */}
-      {role === 'student' && (
+      {/* Rest Timer (Accessible in student workout view) */}
+      {currentUser.role === 'student' && (
         <RestTimer
           autoStartSeconds={autoStartTimer}
           onTimerEnd={() => setAutoStartTimer(null)}

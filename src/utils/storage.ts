@@ -1,17 +1,58 @@
-import { Exercise, Routine, Student, DayFeedback } from '../types';
-import { INITIAL_EXERCISES, INITIAL_ROUTINE_NAHIR, INITIAL_STUDENTS } from '../data/gymData';
+import { Exercise, Routine, Student, DayFeedback, UserProfile, AuthSession } from '../types';
+import { INITIAL_EXERCISES, INITIAL_ROUTINE_NAHIR, INITIAL_STUDENTS, INITIAL_USERS } from '../data/gymData';
 import { getSupabase } from './supabase';
 
 const KEYS = {
-  EXERCISES: 'entrenapro_exercises',
-  ROUTINES: 'entrenapro_routines',
-  STUDENTS: 'entrenapro_students',
-  LOGS: 'entrenapro_workout_logs',
-  FEEDBACKS: 'entrenapro_feedbacks',
-  ACTIVE_ROLE: 'entrenapro_active_role',
-  ACTIVE_STUDENT: 'entrenapro_active_student',
+  EXERCISES: 'flg_exercises',
+  ROUTINES: 'flg_routines',
+  STUDENTS: 'flg_students',
+  USERS: 'flg_users',
+  SESSION: 'flg_session',
+  LOGS: 'flg_workout_logs',
+  FEEDBACKS: 'flg_feedbacks',
+  ACTIVE_ROLE: 'flg_active_role',
+  ACTIVE_STUDENT: 'flg_active_student',
 };
 
+// Users & Auth Storage
+export const getStoredUsers = (): UserProfile[] => {
+  try {
+    const raw = localStorage.getItem(KEYS.USERS);
+    if (!raw) return INITIAL_USERS;
+    return JSON.parse(raw);
+  } catch {
+    return INITIAL_USERS;
+  }
+};
+
+export const saveStoredUsers = (users: UserProfile[]) => {
+  localStorage.setItem(KEYS.USERS, JSON.stringify(users));
+  syncKeyToSupabase('users', users);
+};
+
+export const getStoredSession = (): AuthSession | null => {
+  try {
+    const raw = localStorage.getItem(KEYS.SESSION);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
+
+export const saveStoredSession = (session: AuthSession | null) => {
+  if (session) {
+    localStorage.setItem(KEYS.SESSION, JSON.stringify(session));
+  } else {
+    localStorage.removeItem(KEYS.SESSION);
+  }
+};
+
+export const clearStoredSession = () => {
+  localStorage.removeItem(KEYS.SESSION);
+};
+
+// Exercises Storage
 export const getStoredExercises = (): Exercise[] => {
   try {
     const raw = localStorage.getItem(KEYS.EXERCISES);
@@ -27,6 +68,7 @@ export const saveStoredExercises = (exercises: Exercise[]) => {
   syncKeyToSupabase('exercises', exercises);
 };
 
+// Routines Storage
 export const getStoredRoutines = (): Routine[] => {
   try {
     const raw = localStorage.getItem(KEYS.ROUTINES);
@@ -42,6 +84,7 @@ export const saveStoredRoutines = (routines: Routine[]) => {
   syncKeyToSupabase('routines', routines);
 };
 
+// Students Storage
 export const getStoredStudents = (): Student[] => {
   try {
     const raw = localStorage.getItem(KEYS.STUDENTS);
@@ -57,6 +100,7 @@ export const saveStoredStudents = (students: Student[]) => {
   syncKeyToSupabase('students', students);
 };
 
+// Logs Storage
 export interface SetRecord {
   kgs: string;
   completado: boolean;
@@ -80,6 +124,7 @@ export const saveStoredLogs = (logs: WorkoutLogsMap) => {
   syncKeyToSupabase('workout_logs', logs);
 };
 
+// Feedback Storage
 export type FeedbacksMap = Record<string, DayFeedback>;
 
 export const getStoredFeedbacks = (): FeedbacksMap => {
@@ -97,7 +142,7 @@ export const saveStoredFeedbacks = (feedbacks: FeedbacksMap) => {
   syncKeyToSupabase('feedbacks', feedbacks);
 };
 
-// Helper to push update to Supabase
+// Push to Supabase
 const syncKeyToSupabase = async (key: string, value: any) => {
   const supabase = getSupabase();
   if (!supabase) return;
@@ -114,7 +159,7 @@ const syncKeyToSupabase = async (key: string, value: any) => {
   }
 };
 
-// Fetch all keys from Supabase on start and merge
+// Pull all from Supabase
 export const pullAllFromSupabase = async (onUpdate: () => void) => {
   const supabase = getSupabase();
   if (!supabase) return;
@@ -130,6 +175,8 @@ export const pullAllFromSupabase = async (onUpdate: () => void) => {
         localStorage.setItem(KEYS.ROUTINES, JSON.stringify(row.value));
       } else if (row.key === 'students' && row.value) {
         localStorage.setItem(KEYS.STUDENTS, JSON.stringify(row.value));
+      } else if (row.key === 'users' && row.value) {
+        localStorage.setItem(KEYS.USERS, JSON.stringify(row.value));
       } else if (row.key === 'workout_logs' && row.value) {
         localStorage.setItem(KEYS.LOGS, JSON.stringify(row.value));
       } else if (row.key === 'feedbacks' && row.value) {
@@ -143,13 +190,13 @@ export const pullAllFromSupabase = async (onUpdate: () => void) => {
   }
 };
 
-// Realtime subscription setup
+// Realtime subscription
 export const subscribeToSupabaseRealtime = (onRemoteChange: () => void) => {
   const supabase = getSupabase();
   if (!supabase) return () => {};
 
   const channel = supabase
-    .channel('entrenapro-changes')
+    .channel('flg-trainer-changes')
     .on(
       'postgres_changes',
       { event: '*', schema: 'public', table: 'entrenapro_data' },
@@ -159,6 +206,7 @@ export const subscribeToSupabaseRealtime = (onRemoteChange: () => void) => {
           if (row.key === 'exercises') localStorage.setItem(KEYS.EXERCISES, JSON.stringify(row.value));
           if (row.key === 'routines') localStorage.setItem(KEYS.ROUTINES, JSON.stringify(row.value));
           if (row.key === 'students') localStorage.setItem(KEYS.STUDENTS, JSON.stringify(row.value));
+          if (row.key === 'users') localStorage.setItem(KEYS.USERS, JSON.stringify(row.value));
           if (row.key === 'workout_logs') localStorage.setItem(KEYS.LOGS, JSON.stringify(row.value));
           if (row.key === 'feedbacks') localStorage.setItem(KEYS.FEEDBACKS, JSON.stringify(row.value));
           onRemoteChange();

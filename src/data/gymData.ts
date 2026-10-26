@@ -1,4 +1,4 @@
-import { Exercise, MovementPattern, Routine, Student } from '../types';
+import { Exercise, MovementPattern, Routine, Student, UserProfile } from '../types';
 
 export const MOVEMENT_PATTERNS: MovementPattern[] = [
   "Movilidad",
@@ -1774,7 +1774,7 @@ export const INITIAL_EXERCISES: Exercise[] = [
     "nombre": "Caminata En Estocada Adelante",
     "patron": "Rodilla Dominante",
     "video_url": "https://www.youtube.com/watch?v=EvzlMxD7kmk",
-    "progresion_default": "Meseta 3x10"
+    "progresion_default": "Meseta 3x20"
   },
   {
     "id": "caminata_en_estocada_adelante___rodilla_arriba",
@@ -2024,9 +2024,9 @@ export const INITIAL_EXERCISES: Exercise[] = [
   {
     "id": "prensa_a_45",
     "nombre": "Prensa A 45",
-    "patron": "Rodilla Dominante",
-    "video_url": "https://www.youtube.com/watch?v=KJVCM2CwWhQ",
-    "progresion_default": "Meseta 3x15"
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
   },
   {
     "id": "rodillas_a_pararse_controlado",
@@ -2080,9 +2080,9 @@ export const INITIAL_EXERCISES: Exercise[] = [
   {
     "id": "sentadilla_bulgara_goblet",
     "nombre": "Sentadilla Bulgara Goblet",
-    "patron": "Rodilla Dominante",
-    "video_url": "https://www.youtube.com/watch?v=W3X6XuCVrRQ",
-    "progresion_default": "Meseta 3x10"
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
   },
   {
     "id": "sentadilla_bulgara_overhead",
@@ -2101,9 +2101,9 @@ export const INITIAL_EXERCISES: Exercise[] = [
   {
     "id": "sentadilla_bulgara_valija_1_brazo",
     "nombre": "Sentadilla Bulgara Valija 1 Brazo",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
+    "patron": "Rodilla Dominante",
+    "video_url": "https://www.youtube.com/watch?v=rAO8M9INgww",
+    "progresion_default": "Meseta 3x10"
   },
   {
     "id": "sentadilla_con_banco",
@@ -2512,6 +2512,622 @@ export const INITIAL_EXERCISES: Exercise[] = [
     "progresion_default": "Escalon (Simple) desde 4x8"
   },
   {
+    "id": "peso_muerto",
+    "nombre": "Peso Muerto",
+    "patron": "Cadera Dominante",
+    "video_url": "https://www.youtube.com/watch?v=z_UsunyCxxg",
+    "progresion_default": "Meseta 3x10"
+  },
+  {
+    "id": "avion",
+    "nombre": "Avion",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "avion_asistido_con_pared",
+    "nombre": "Avion Asistido Con Pared",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "bisagra_arrodillado_goblet",
+    "nombre": "Bisagra Arrodillado Goblet",
+    "patron": "Cadera Dominante",
+    "video_url": "https://www.youtube.com/watch?v=WNKiVHo6sUU",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "buenos_dias_cabra",
+    "nombre": "Buenos Dias Cabra",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "buenos_dias_con_barra_sentado",
+    "nombre": "Buenos Dias Con Barra Sentado",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "buenos_dias_goblet",
+    "nombre": "Buenos Dias Goblet",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "buenos_dias_por_delante_corebag",
+    "nombre": "Buenos Dias Por Delante Corebag",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "buenos_dias_zercher",
+    "nombre": "Buenos Dias Zercher",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "curl_de_isquio_con_fitball",
+    "nombre": "Curl De Isquio Con Fitball",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "fighter_swing",
+    "nombre": "Fighter Swing",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "frog_pumps",
+    "nombre": "Frog Pumps",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "hip_thrust",
+    "nombre": "Hip Thrust",
+    "patron": "Cadera Dominante",
+    "video_url": "https://www.youtube.com/watch?v=OAhvIWLC0rc",
+    "progresion_default": "Meseta 3x10"
+  },
+  {
+    "id": "hip_thrust___press",
+    "nombre": "Hip Thrust + Press",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "hip_thrust_1_pie",
+    "nombre": "Hip Thrust 1 Pie",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "hip_thrust_asimetrico",
+    "nombre": "Hip Thrust Asimetrico",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "hip_thrust_con_barra",
+    "nombre": "Hip Thrust Con Barra",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "hip_thrust_con_barra_1_pie",
+    "nombre": "Hip Thrust Con Barra 1 Pie",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "hip_thrust_elevado",
+    "nombre": "Hip Thrust Elevado",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "hip_thrust_en_maquina_smith",
+    "nombre": "Hip Thrust En Maquina Smith",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "hiperextensiones",
+    "nombre": "Hiperextensiones",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "iso_buenos_dias_con_barra",
+    "nombre": "Iso Buenos Dias Con Barra",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "jefferson_curl",
+    "nombre": "Jefferson Curl",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "patada_de_gluteos",
+    "nombre": "Patada De Gluteos",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto___halo_de_cabeza_kb",
+    "nombre": "Peso Muerto + Halo De Cabeza Kb",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto___remo_con_kb",
+    "nombre": "Peso Muerto + Remo Con Kb",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_1_pie_con_landmine",
+    "nombre": "Peso Muerto 1 Pie Con Landmine",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_1_pie_en_trx",
+    "nombre": "Peso Muerto 1 Pie En Trx",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_asim_trico",
+    "nombre": "Peso Muerto Asimétrico",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_con_banda",
+    "nombre": "Peso Muerto Con Banda",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_con_corebag",
+    "nombre": "Peso Muerto Con Corebag",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_con_kb",
+    "nombre": "Peso Muerto Con Kb",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_con_landmine",
+    "nombre": "Peso Muerto Con Landmine",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_con_pausa",
+    "nombre": "Peso Muerto Con Pausa",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_con_pausa_kb",
+    "nombre": "Peso Muerto Con Pausa Kb",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_con_trap_bar",
+    "nombre": "Peso Muerto Con Trap Bar",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_rumano",
+    "nombre": "Peso Muerto Rumano",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_rumano_con_mancuernas",
+    "nombre": "Peso Muerto Rumano Con Mancuernas",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_rumano_deficit",
+    "nombre": "Peso Muerto Rumano Deficit",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_rumano_en_trap_bar",
+    "nombre": "Peso Muerto Rumano En Trap Bar",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_sumo",
+    "nombre": "Peso Muerto Sumo",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_unipodal_asistido_c__pared",
+    "nombre": "Peso Muerto Unipodal Asistido C/ Pared",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_unipodal_con_barra",
+    "nombre": "Peso Muerto Unipodal Con Barra",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_unipodal_con_kb",
+    "nombre": "Peso Muerto Unipodal Con Kb",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_unipodal_en_trx",
+    "nombre": "Peso Muerto Unipodal En Trx",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_unipodal_isometrico_asistido",
+    "nombre": "Peso Muerto Unipodal Isometrico Asistido",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_con_miniband",
+    "nombre": "Puente Con Miniband",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_de_gluteo",
+    "nombre": "Puente De Gluteo",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_de_gluteo_a_1_pie",
+    "nombre": "Puente De Gluteo A 1 Pie",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_de_gluteo_asimetrico",
+    "nombre": "Puente De Gluteo Asimetrico",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_de_gluteo_con_pelota_y_aductor",
+    "nombre": "Puente De Gluteo Con Pelota Y Aductor",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_de_gluteo_con_silla",
+    "nombre": "Puente De Gluteo Con Silla",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_de_gluteo_con_silla_1_pie",
+    "nombre": "Puente De Gluteo Con Silla 1 Pie",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_de_gluteo_deficit",
+    "nombre": "Puente De Gluteo Deficit",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_de_gluteo_pl_con_abeduccion_en_trx",
+    "nombre": "Puente De Gluteo Pl Con Abeduccion En Trx",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_de_gluteo_pl_en_trx",
+    "nombre": "Puente De Gluteo Pl En Trx",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_gluteo_slide_1",
+    "nombre": "Puente Gluteo Slide 1",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_gluteo_slide_2",
+    "nombre": "Puente Gluteo Slide 2",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_invertido",
+    "nombre": "Puente Invertido",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_invertido_frog",
+    "nombre": "Puente Invertido Frog",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_slide_a_1_pie",
+    "nombre": "Puente Slide A 1 Pie",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "puente_unilateral_con_slide",
+    "nombre": "Puente Unilateral Con Slide",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "pueso_muerto_sumo_kb",
+    "nombre": "Pueso Muerto Sumo Kb",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "pull_through_con_banda",
+    "nombre": "Pull-Through Con Banda",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "swing",
+    "nombre": "Swing",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "swing_a_una_mano",
+    "nombre": "Swing A Una Mano",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "swing_una_mano_alternado",
+    "nombre": "Swing Una Mano Alternado",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "windmill_inicial",
+    "nombre": "Windmill Inicial",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "windmill_inicial_con_kb",
+    "nombre": "Windmill Inicial Con Kb",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_rumano_con_mancuernas___iso",
+    "nombre": "Peso Muerto Rumano Con Mancuernas + Iso",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_rumano_asimetr_con_mancuernas___iso",
+    "nombre": "Peso Muerto Rumano Asimetr Con Mancuernas + Iso",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "evaluacion_de_puente_de_gluteo",
+    "nombre": "Evaluacion De Puente De Gluteo",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_semi_sumo",
+    "nombre": "Peso Muerto Semi-Sumo",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_rumano_c_mancuerna_asimetrico",
+    "nombre": "Peso Muerto Rumano C/Mancuerna Asimetrico",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_americano",
+    "nombre": "Peso Muerto Americano",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "safety_buenos_dias",
+    "nombre": "Safety Buenos Dias",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "safety_sumo_buenos_dias",
+    "nombre": "Safety Sumo Buenos Dias",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "safety_buenos_dias_asimetrico",
+    "nombre": "Safety Buenos Dias Asimetrico",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "buenos_dias_con_barra",
+    "nombre": "Buenos Dias Con Barra",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "patada_ranita_gluteos",
+    "nombre": "Patada ranita gluteos",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "gluteos_en_banco_lumbar",
+    "nombre": "Gluteos en banco lumbar",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_a_1_pierna_en_polea",
+    "nombre": "Peso muerto a 1 pierna en polea",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "pull_through_en_polea_baja",
+    "nombre": "Pull through en polea baja",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "patada_de_rana_gluteos",
+    "nombre": "Patada de rana gluteos",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "abductores_con_disco_isometrico",
+    "nombre": "Abductores con disco isometrico",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "peso_muerto_unilateral__banco",
+    "nombre": "Peso muerto unilateral (banco)",
+    "patron": "Cadera Dominante",
+    "video_url": "https://www.youtube.com/watch?v=wyJQpvfWrIc",
+    "progresion_default": "Meseta 3x10"
+  },
+  {
+    "id": "hip_thrust_con_banda",
+    "nombre": "Hip Thrust con banda",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "extension_en_dual_hip",
+    "nombre": "Extension en dual Hip",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
     "id": "curl_femoral_acostado",
     "nombre": "Curl femoral acostado",
     "patron": "Localizado",
@@ -2521,9 +3137,9 @@ export const INITIAL_EXERCISES: Exercise[] = [
   {
     "id": "abducciones_de_cadera_en_banco",
     "nombre": "Abducciones De Cadera En Banco",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
+    "patron": "Localizado",
+    "video_url": "https://www.youtube.com/watch?v=QrtNK5BqAYE",
+    "progresion_default": "Meseta 3x10"
   },
   {
     "id": "abeducciones_de_cadera_en_cuadrupedia",
@@ -2950,7 +3566,7 @@ export const INITIAL_EXERCISES: Exercise[] = [
     "nombre": "Tricep press frances",
     "patron": "Localizado",
     "video_url": "https://www.youtube.com/results?search_query=triceps+press+frances+con+mancuernas+",
-    "progresion_default": "3x10"
+    "progresion_default": "Meseta 3x10"
   },
   {
     "id": "curl_femoral_sentado",
@@ -3020,7 +3636,7 @@ export const INITIAL_EXERCISES: Exercise[] = [
     "nombre": "Patada de gluteos en maquina",
     "patron": "Localizado",
     "video_url": "https://www.youtube.com/watch?v=7dAyon8VTz4",
-    "progresion_default": "Meseta 3x15"
+    "progresion_default": "Meseta 3x10"
   },
   {
     "id": "abd__oblicuos_en_polea_baja",
@@ -3144,6 +3760,20 @@ export const INITIAL_EXERCISES: Exercise[] = [
   {
     "id": "movilidad_de_hombro_con_baston",
     "nombre": "Movilidad de hombro con baston",
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
+  },
+  {
+    "id": "movilidad_de_hombro_con_banda_adealnte_atras",
+    "nombre": "Movilidad de hombro con banda adealnte atras",
+    "patron": "Movilidad",
+    "video_url": "https://www.youtube.com/watch?v=kjjIbE70KIY",
+    "progresion_default": "Meseta 3x10''"
+  },
+  {
+    "id": "rotacion_de_hombro_con_banda",
+    "nombre": "Rotacion de hombro con banda",
     "patron": "General",
     "video_url": "",
     "progresion_default": "3x10"
@@ -3627,9 +4257,9 @@ export const INITIAL_EXERCISES: Exercise[] = [
   {
     "id": "press_militar",
     "nombre": "Press Militar",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
+    "patron": "Empuje",
+    "video_url": "https://www.youtube.com/watch?v=egiu42izhHg",
+    "progresion_default": "Escalon (Simple) desde 4x8"
   },
   {
     "id": "press_militar_1___1_4",
@@ -3648,9 +4278,9 @@ export const INITIAL_EXERCISES: Exercise[] = [
   {
     "id": "press_militar_con_mancueras",
     "nombre": "Press Militar Con Mancueras",
-    "patron": "Empuje",
-    "video_url": "https://www.youtube.com/watch?v=rTiSnBtwj5s",
-    "progresion_default": "Escalon (simple) desde 3x8"
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
   },
   {
     "id": "press_militar_con_mancuernas_en_banco",
@@ -3718,9 +4348,9 @@ export const INITIAL_EXERCISES: Exercise[] = [
   {
     "id": "pull_over",
     "nombre": "Pull Over",
-    "patron": "Empuje",
-    "video_url": "https://www.youtube.com/watch?v=JGWKbzZmFhU",
-    "progresion_default": "Meseta 2x15"
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
   },
   {
     "id": "flexiones_a_roll_out_con_barra",
@@ -3823,9 +4453,9 @@ export const INITIAL_EXERCISES: Exercise[] = [
   {
     "id": "press_en_hammer",
     "nombre": "Press en hammer",
-    "patron": "Empuje",
-    "video_url": "https://www.youtube.com/watch?v=7HhE4z-j5lc",
-    "progresion_default": "Meseta 2x15"
+    "patron": "General",
+    "video_url": "",
+    "progresion_default": "3x10"
   },
   {
     "id": "vuelo_frontal_en_polea",
@@ -4474,9 +5104,9 @@ export const INITIAL_EXERCISES: Exercise[] = [
   {
     "id": "pull_over_en_polea",
     "nombre": "Pull Over en polea",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
+    "patron": "Traccion",
+    "video_url": "https://www.youtube.com/watch?v=rRZ8hhpKozA",
+    "progresion_default": "Meseta 2x15"
   },
   {
     "id": "vuelo_posteior_unilateral_polea",
@@ -4519,622 +5149,6 @@ export const INITIAL_EXERCISES: Exercise[] = [
     "patron": "Traccion",
     "video_url": "https://www.youtube.com/watch?v=sYl2uUE7kt0",
     "progresion_default": "Meseta 3x15"
-  },
-  {
-    "id": "bisagra_arrodillado_goblet",
-    "nombre": "Bisagra Arrodillado Goblet",
-    "patron": "Cadera Dominante",
-    "video_url": "https://www.youtube.com/watch?v=WNKiVHo6sUU",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "avion",
-    "nombre": "Avion",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "avion_asistido_con_pared",
-    "nombre": "Avion Asistido Con Pared",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "buenos_dias_cabra",
-    "nombre": "Buenos Dias Cabra",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "buenos_dias_con_barra_sentado",
-    "nombre": "Buenos Dias Con Barra Sentado",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "buenos_dias_goblet",
-    "nombre": "Buenos Dias Goblet",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "buenos_dias_por_delante_corebag",
-    "nombre": "Buenos Dias Por Delante Corebag",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "buenos_dias_zercher",
-    "nombre": "Buenos Dias Zercher",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "curl_de_isquio_con_fitball",
-    "nombre": "Curl De Isquio Con Fitball",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "fighter_swing",
-    "nombre": "Fighter Swing",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "frog_pumps",
-    "nombre": "Frog Pumps",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "hip_thrust",
-    "nombre": "Hip Thrust",
-    "patron": "Cadera Dominante",
-    "video_url": "https://www.youtube.com/watch?v=OAhvIWLC0rc",
-    "progresion_default": "Meseta 3x10"
-  },
-  {
-    "id": "hip_thrust___press",
-    "nombre": "Hip Thrust + Press",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "hip_thrust_1_pie",
-    "nombre": "Hip Thrust 1 Pie",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "hip_thrust_asimetrico",
-    "nombre": "Hip Thrust Asimetrico",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "hip_thrust_con_barra",
-    "nombre": "Hip Thrust Con Barra",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "hip_thrust_con_barra_1_pie",
-    "nombre": "Hip Thrust Con Barra 1 Pie",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "hip_thrust_elevado",
-    "nombre": "Hip Thrust Elevado",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "hip_thrust_en_maquina_smith",
-    "nombre": "Hip Thrust En Maquina Smith",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "hiperextensiones",
-    "nombre": "Hiperextensiones",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "iso_buenos_dias_con_barra",
-    "nombre": "Iso Buenos Dias Con Barra",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "jefferson_curl",
-    "nombre": "Jefferson Curl",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "patada_de_gluteos",
-    "nombre": "Patada De Gluteos",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto",
-    "nombre": "Peso Muerto",
-    "patron": "Cadera Dominante",
-    "video_url": "https://www.youtube.com/watch?v=z_UsunyCxxg",
-    "progresion_default": "Escalon (Simple) desde 4x6"
-  },
-  {
-    "id": "peso_muerto___halo_de_cabeza_kb",
-    "nombre": "Peso Muerto + Halo De Cabeza Kb",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto___remo_con_kb",
-    "nombre": "Peso Muerto + Remo Con Kb",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_1_pie_con_landmine",
-    "nombre": "Peso Muerto 1 Pie Con Landmine",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_1_pie_en_trx",
-    "nombre": "Peso Muerto 1 Pie En Trx",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_asim_trico",
-    "nombre": "Peso Muerto Asimétrico",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_con_banda",
-    "nombre": "Peso Muerto Con Banda",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_con_corebag",
-    "nombre": "Peso Muerto Con Corebag",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_con_kb",
-    "nombre": "Peso Muerto Con Kb",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_con_landmine",
-    "nombre": "Peso Muerto Con Landmine",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_con_pausa",
-    "nombre": "Peso Muerto Con Pausa",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_con_pausa_kb",
-    "nombre": "Peso Muerto Con Pausa Kb",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_con_trap_bar",
-    "nombre": "Peso Muerto Con Trap Bar",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_rumano",
-    "nombre": "Peso Muerto Rumano",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_rumano_con_mancuernas",
-    "nombre": "Peso Muerto Rumano Con Mancuernas",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_rumano_deficit",
-    "nombre": "Peso Muerto Rumano Deficit",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_rumano_en_trap_bar",
-    "nombre": "Peso Muerto Rumano En Trap Bar",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_sumo",
-    "nombre": "Peso Muerto Sumo",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_unipodal_asistido_c__pared",
-    "nombre": "Peso Muerto Unipodal Asistido C/ Pared",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_unipodal_con_barra",
-    "nombre": "Peso Muerto Unipodal Con Barra",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_unipodal_con_kb",
-    "nombre": "Peso Muerto Unipodal Con Kb",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_unipodal_en_trx",
-    "nombre": "Peso Muerto Unipodal En Trx",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_unipodal_isometrico_asistido",
-    "nombre": "Peso Muerto Unipodal Isometrico Asistido",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_con_miniband",
-    "nombre": "Puente Con Miniband",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_de_gluteo",
-    "nombre": "Puente De Gluteo",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_de_gluteo_a_1_pie",
-    "nombre": "Puente De Gluteo A 1 Pie",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_de_gluteo_asimetrico",
-    "nombre": "Puente De Gluteo Asimetrico",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_de_gluteo_con_pelota_y_aductor",
-    "nombre": "Puente De Gluteo Con Pelota Y Aductor",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_de_gluteo_con_silla",
-    "nombre": "Puente De Gluteo Con Silla",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_de_gluteo_con_silla_1_pie",
-    "nombre": "Puente De Gluteo Con Silla 1 Pie",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_de_gluteo_deficit",
-    "nombre": "Puente De Gluteo Deficit",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_de_gluteo_pl_con_abeduccion_en_trx",
-    "nombre": "Puente De Gluteo Pl Con Abeduccion En Trx",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_de_gluteo_pl_en_trx",
-    "nombre": "Puente De Gluteo Pl En Trx",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_gluteo_slide_1",
-    "nombre": "Puente Gluteo Slide 1",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_gluteo_slide_2",
-    "nombre": "Puente Gluteo Slide 2",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_invertido",
-    "nombre": "Puente Invertido",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_invertido_frog",
-    "nombre": "Puente Invertido Frog",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_slide_a_1_pie",
-    "nombre": "Puente Slide A 1 Pie",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "puente_unilateral_con_slide",
-    "nombre": "Puente Unilateral Con Slide",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "pueso_muerto_sumo_kb",
-    "nombre": "Pueso Muerto Sumo Kb",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "pull_through_con_banda",
-    "nombre": "Pull-Through Con Banda",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "swing",
-    "nombre": "Swing",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "swing_a_una_mano",
-    "nombre": "Swing A Una Mano",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "swing_una_mano_alternado",
-    "nombre": "Swing Una Mano Alternado",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "windmill_inicial",
-    "nombre": "Windmill Inicial",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "windmill_inicial_con_kb",
-    "nombre": "Windmill Inicial Con Kb",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_rumano_con_mancuernas___iso",
-    "nombre": "Peso Muerto Rumano Con Mancuernas + Iso",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_rumano_asimetr_con_mancuernas___iso",
-    "nombre": "Peso Muerto Rumano Asimetr Con Mancuernas + Iso",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "evaluacion_de_puente_de_gluteo",
-    "nombre": "Evaluacion De Puente De Gluteo",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_semi_sumo",
-    "nombre": "Peso Muerto Semi-Sumo",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_rumano_c_mancuerna_asimetrico",
-    "nombre": "Peso Muerto Rumano C/Mancuerna Asimetrico",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_americano",
-    "nombre": "Peso Muerto Americano",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "safety_buenos_dias",
-    "nombre": "Safety Buenos Dias",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "safety_sumo_buenos_dias",
-    "nombre": "Safety Sumo Buenos Dias",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "safety_buenos_dias_asimetrico",
-    "nombre": "Safety Buenos Dias Asimetrico",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "buenos_dias_con_barra",
-    "nombre": "Buenos Dias Con Barra",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "patada_ranita_gluteos",
-    "nombre": "Patada ranita gluteos",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "gluteos_en_banco_lumbar",
-    "nombre": "Gluteos en banco lumbar",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_a_1_pierna_en_polea",
-    "nombre": "Peso muerto a 1 pierna en polea",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "pull_through_en_polea_baja",
-    "nombre": "Pull through en polea baja",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "patada_de_rana_gluteos",
-    "nombre": "Patada de rana gluteos",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "abductores_con_disco_isometrico",
-    "nombre": "Abductores con disco isometrico",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "peso_muerto_unilateral__banco",
-    "nombre": "Peso muerto unilateral (banco)",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "hip_thrust_con_banda",
-    "nombre": "Hip Thrust con banda",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
-  },
-  {
-    "id": "extension_en_dual_hip",
-    "nombre": "Extension en dual Hip",
-    "patron": "General",
-    "video_url": "",
-    "progresion_default": "3x10"
   }
 ];
 
@@ -5148,7 +5162,7 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
     {
       "id": "day_1",
       "dia_num": 1,
-      "nombre": "Día 1: Movilidad, Core y Piernas (Sentadilla & Prensa)",
+      "nombre": "Día 1: Movilidad, Core y Piernas (Sentadilla & Peso Muerto)",
       "items": [
         {
           "id": "dia_1_gato_bueno_gato_malo",
@@ -5192,6 +5206,41 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           "ejercicio_nombre": "90-90",
           "patron": "Movilidad",
           "video_url": "https://www.youtube.com/watch?v=RztQ13_zTIQ",
+          "progresion": "Meseta 3x10''",
+          "prescripcion": {
+            "semana_1": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_2": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_3": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_4": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_5": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_6": {
+              "series": "3x 10''",
+              "kgs": ""
+            }
+          }
+        },
+        {
+          "id": "dia_1_cobra_con_rotaciones",
+          "bloque": "Circ 1",
+          "ejercicio_id": "cobra_con_rotaciones",
+          "ejercicio_nombre": "Cobra Con Rotaciones",
+          "patron": "Movilidad",
+          "video_url": "https://www.youtube.com/watch?v=93OogUYDDeA",
           "progresion": "Meseta 3x10''",
           "prescripcion": {
             "semana_1": {
@@ -5326,12 +5375,12 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           }
         },
         {
-          "id": "dia_1_caminata_en_estocada_adelante",
+          "id": "dia_1_peso_muerto",
           "bloque": "B2",
-          "ejercicio_id": "caminata_en_estocada_adelante",
-          "ejercicio_nombre": "Caminata En Estocada Adelante",
-          "patron": "Rodilla Dominante",
-          "video_url": "https://www.youtube.com/watch?v=EvzlMxD7kmk",
+          "ejercicio_id": "peso_muerto",
+          "ejercicio_nombre": "Peso Muerto",
+          "patron": "Cadera Dominante",
+          "video_url": "https://www.youtube.com/watch?v=z_UsunyCxxg",
           "progresion": "Meseta 3x10",
           "prescripcion": {
             "semana_1": {
@@ -5361,36 +5410,36 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           }
         },
         {
-          "id": "dia_1_prensa_a_45",
+          "id": "dia_1_caminata_en_estocada_adelante",
           "bloque": "C1",
-          "ejercicio_id": "prensa_a_45",
-          "ejercicio_nombre": "Prensa A 45",
+          "ejercicio_id": "caminata_en_estocada_adelante",
+          "ejercicio_nombre": "Caminata En Estocada Adelante",
           "patron": "Rodilla Dominante",
-          "video_url": "https://www.youtube.com/watch?v=KJVCM2CwWhQ",
-          "progresion": "Meseta 3x15",
+          "video_url": "https://www.youtube.com/watch?v=EvzlMxD7kmk",
+          "progresion": "Meseta 3x20",
           "prescripcion": {
             "semana_1": {
-              "series": "3x15",
+              "series": "3x20",
               "kgs": ""
             },
             "semana_2": {
-              "series": "3x15",
+              "series": "3x20",
               "kgs": ""
             },
             "semana_3": {
-              "series": "3x15",
+              "series": "3x20",
               "kgs": ""
             },
             "semana_4": {
-              "series": "3x15",
+              "series": "3x20",
               "kgs": ""
             },
             "semana_5": {
-              "series": "3x15",
+              "series": "3x20",
               "kgs": ""
             },
             "semana_6": {
-              "series": "315",
+              "series": "3x20",
               "kgs": ""
             }
           }
@@ -5578,6 +5627,41 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           }
         },
         {
+          "id": "dia_2_movilidad_de_hombro_con_banda_adealnte_atras",
+          "bloque": "Circ 1",
+          "ejercicio_id": "movilidad_de_hombro_con_banda_adealnte_atras",
+          "ejercicio_nombre": "Movilidad de hombro con banda adealnte atras",
+          "patron": "Movilidad",
+          "video_url": "https://www.youtube.com/watch?v=kjjIbE70KIY",
+          "progresion": "Meseta 3x10''",
+          "prescripcion": {
+            "semana_1": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_2": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_3": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_4": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_5": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_6": {
+              "series": "3x 10''",
+              "kgs": ""
+            }
+          }
+        },
+        {
           "id": "dia_2_bird_dog_dinamico__lumbar",
           "bloque": "Circ 2",
           "ejercicio_id": "bird_dog_dinamico__lumbar",
@@ -5683,36 +5767,36 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           }
         },
         {
-          "id": "dia_2_press_en_hammer",
+          "id": "dia_2_fondos_de_tricep_en_maquina_asistida",
           "bloque": "B2",
-          "ejercicio_id": "press_en_hammer",
-          "ejercicio_nombre": "Press en hammer",
+          "ejercicio_id": "fondos_de_tricep_en_maquina_asistida",
+          "ejercicio_nombre": "Fondos de tricep en maquina asistida",
           "patron": "Empuje",
-          "video_url": "https://www.youtube.com/watch?v=7HhE4z-j5lc",
-          "progresion": "Meseta 2x15",
+          "video_url": "https://www.youtube.com/watch?v=3a3vg5UAcaU",
+          "progresion": "Meseta 3x10",
           "prescripcion": {
             "semana_1": {
-              "series": "2x15",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_2": {
-              "series": "2x15",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_3": {
-              "series": "2x15",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_4": {
-              "series": "2x15",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_5": {
-              "series": "2x15",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_6": {
-              "series": "2x15",
+              "series": "3x10",
               "kgs": ""
             }
           }
@@ -5753,47 +5837,47 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           }
         },
         {
-          "id": "dia_2_press_militar_con_mancueras",
+          "id": "dia_2_press_militar",
           "bloque": "C3",
-          "ejercicio_id": "press_militar_con_mancueras",
-          "ejercicio_nombre": "Press Militar Con Mancueras",
+          "ejercicio_id": "press_militar",
+          "ejercicio_nombre": "Press Militar",
           "patron": "Empuje",
-          "video_url": "https://www.youtube.com/watch?v=rTiSnBtwj5s",
-          "progresion": "Escalon (simple) desde 3x8",
+          "video_url": "https://www.youtube.com/watch?v=egiu42izhHg",
+          "progresion": "Escalon (Simple) desde 4x8",
           "prescripcion": {
             "semana_1": {
-              "series": "3x8",
+              "series": "4x8",
               "kgs": ""
             },
             "semana_2": {
-              "series": "10-9-8",
+              "series": "10-8-8-8",
               "kgs": ""
             },
             "semana_3": {
-              "series": "3x10",
+              "series": "10-10-8-8",
               "kgs": ""
             },
             "semana_4": {
-              "series": "12-11-10",
+              "series": "10-10-10-8",
               "kgs": ""
             },
             "semana_5": {
-              "series": "3x12",
+              "series": "4x10",
               "kgs": ""
             },
             "semana_6": {
-              "series": "15-13-12",
+              "series": "12-10-10-10",
               "kgs": ""
             }
           }
         },
         {
-          "id": "dia_2_fondos_de_tricep_en_maquina_asistida",
+          "id": "dia_2_tricep_press_frances",
           "bloque": "C3",
-          "ejercicio_id": "fondos_de_tricep_en_maquina_asistida",
-          "ejercicio_nombre": "Fondos de tricep en maquina asistida",
-          "patron": "Empuje",
-          "video_url": "https://www.youtube.com/watch?v=3a3vg5UAcaU",
+          "ejercicio_id": "tricep_press_frances",
+          "ejercicio_nombre": "Tricep press frances",
+          "patron": "Localizado",
+          "video_url": "https://www.youtube.com/results?search_query=triceps+press+frances+con+mancuernas+",
           "progresion": "Meseta 3x10",
           "prescripcion": {
             "semana_1": {
@@ -5862,7 +5946,7 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
     {
       "id": "day_3",
       "dia_num": 3,
-      "nombre": "Día 3: Movilidad, Core y Cadera Dominante",
+      "nombre": "Día 3: Movilidad, Core y Cadera Dominante (Hip Thrust)",
       "items": [
         {
           "id": "dia_3_gato_bueno_gato_malo",
@@ -5906,6 +5990,41 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           "ejercicio_nombre": "90-90 Con Flexion De Tronco",
           "patron": "Movilidad",
           "video_url": "https://www.youtube.com/watch?v=8zpIodv6Yp8",
+          "progresion": "Meseta 3x10''",
+          "prescripcion": {
+            "semana_1": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_2": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_3": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_4": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_5": {
+              "series": "3x 10''",
+              "kgs": ""
+            },
+            "semana_6": {
+              "series": "3x 10''",
+              "kgs": ""
+            }
+          }
+        },
+        {
+          "id": "dia_3_cobra_con_rotaciones",
+          "bloque": "Circ 1",
+          "ejercicio_id": "cobra_con_rotaciones",
+          "ejercicio_nombre": "Cobra Con Rotaciones",
+          "patron": "Movilidad",
+          "video_url": "https://www.youtube.com/watch?v=93OogUYDDeA",
           "progresion": "Meseta 3x10''",
           "prescripcion": {
             "semana_1": {
@@ -6011,30 +6130,30 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           "ejercicio_nombre": "Peso Muerto",
           "patron": "Cadera Dominante",
           "video_url": "https://www.youtube.com/watch?v=z_UsunyCxxg",
-          "progresion": "Escalon (Simple) desde 4x6",
+          "progresion": "Meseta 3x10",
           "prescripcion": {
             "semana_1": {
-              "series": "4x6",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_2": {
-              "series": "8-6-6-6",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_3": {
-              "series": "8-8-6-6",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_4": {
-              "series": "8-8-8-6",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_5": {
-              "series": "4x8",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_6": {
-              "series": "10-8-8-8",
+              "series": "3x10",
               "kgs": ""
             }
           }
@@ -6075,12 +6194,12 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           }
         },
         {
-          "id": "dia_3_sentadilla_bulgara_goblet",
+          "id": "dia_3_sentadilla_bulgara_valija_1_brazo",
           "bloque": "B2",
-          "ejercicio_id": "sentadilla_bulgara_goblet",
-          "ejercicio_nombre": "Sentadilla Bulgara Goblet",
+          "ejercicio_id": "sentadilla_bulgara_valija_1_brazo",
+          "ejercicio_nombre": "Sentadilla Bulgara Valija 1 Brazo",
           "patron": "Rodilla Dominante",
-          "video_url": "https://www.youtube.com/watch?v=W3X6XuCVrRQ",
+          "video_url": "https://www.youtube.com/watch?v=rAO8M9INgww",
           "progresion": "Meseta 3x10",
           "prescripcion": {
             "semana_1": {
@@ -6219,7 +6338,7 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
     {
       "id": "day_4",
       "dia_num": 4,
-      "nombre": "Día 4: Tracción y Estabilidad",
+      "nombre": "Día 4: Tracción y Estabilidad (Jalón & Remo)",
       "items": [
         {
           "id": "dia_4_rotaciones_dorsales_en_cuadrupedia",
@@ -6502,12 +6621,12 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           }
         },
         {
-          "id": "dia_4_pull_over",
+          "id": "dia_4_pull_over_en_polea",
           "bloque": "C2",
-          "ejercicio_id": "pull_over",
-          "ejercicio_nombre": "Pull Over",
-          "patron": "Empuje",
-          "video_url": "https://www.youtube.com/watch?v=JGWKbzZmFhU",
+          "ejercicio_id": "pull_over_en_polea",
+          "ejercicio_nombre": "Pull Over en polea",
+          "patron": "Traccion",
+          "video_url": "https://www.youtube.com/watch?v=rRZ8hhpKozA",
           "progresion": "Meseta 2x15",
           "prescripcion": {
             "semana_1": {
@@ -6789,6 +6908,41 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           }
         },
         {
+          "id": "dia_5_peso_muerto_unilateral__banco",
+          "bloque": "B1",
+          "ejercicio_id": "peso_muerto_unilateral__banco",
+          "ejercicio_nombre": "Peso muerto unilateral (banco)",
+          "patron": "Cadera Dominante",
+          "video_url": "https://www.youtube.com/watch?v=wyJQpvfWrIc",
+          "progresion": "Meseta 3x10",
+          "prescripcion": {
+            "semana_1": {
+              "series": "3x10",
+              "kgs": ""
+            },
+            "semana_2": {
+              "series": "3x10",
+              "kgs": ""
+            },
+            "semana_3": {
+              "series": "3x10",
+              "kgs": ""
+            },
+            "semana_4": {
+              "series": "3x10",
+              "kgs": ""
+            },
+            "semana_5": {
+              "series": "3x10",
+              "kgs": ""
+            },
+            "semana_6": {
+              "series": "3x10",
+              "kgs": ""
+            }
+          }
+        },
+        {
           "id": "dia_5_hip_thrust",
           "bloque": "B2",
           "ejercicio_id": "hip_thrust",
@@ -6929,36 +7083,36 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           }
         },
         {
-          "id": "dia_5_patada_de_gluteos_en_maquina",
+          "id": "dia_5_abducciones_de_cadera_en_banco",
           "bloque": "C3",
-          "ejercicio_id": "patada_de_gluteos_en_maquina",
-          "ejercicio_nombre": "Patada de gluteos en maquina",
+          "ejercicio_id": "abducciones_de_cadera_en_banco",
+          "ejercicio_nombre": "Abducciones De Cadera En Banco",
           "patron": "Localizado",
-          "video_url": "https://www.youtube.com/watch?v=7dAyon8VTz4",
-          "progresion": "Meseta 3x15",
+          "video_url": "https://www.youtube.com/watch?v=QrtNK5BqAYE",
+          "progresion": "Meseta 3x10",
           "prescripcion": {
             "semana_1": {
               "series": "3x15",
               "kgs": ""
             },
             "semana_2": {
-              "series": "3x15",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_3": {
-              "series": "3x15",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_4": {
-              "series": "3x15",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_5": {
-              "series": "3x15",
+              "series": "3x10",
               "kgs": ""
             },
             "semana_6": {
-              "series": "315",
+              "series": "3x10",
               "kgs": ""
             }
           }
@@ -6978,21 +7132,54 @@ export const INITIAL_STUDENTS: Student[] = [
   {
     "id": "student_nahir",
     "nombre": "Nahir",
-    "email": "nahir@entrenapro.com",
+    "email": "nahir@flgtrainer.com",
     "telefono": "+54 9 11 1234-5678",
     "rutina_activa_id": "rutina_nahir_01",
     "semana_actual": 1,
     "objetivo": "Fuerza, tono muscular y postura",
-    "notas_coach": "Enfoque en movilidad de cadera y técnica controlada en sentadillas."
+    "notas_coach": "Enfoque en movilidad de cadera y técnica controlada en sentadillas y peso muerto.",
+    "username": "nahir",
+    "password": "nahir123"
   },
   {
     "id": "student_lucas",
     "nombre": "Lucas M.",
-    "email": "lucas@entrenapro.com",
+    "email": "lucas@flgtrainer.com",
     "telefono": "+54 9 11 8765-4321",
     "rutina_activa_id": "rutina_nahir_01",
     "semana_actual": 2,
     "objetivo": "Hipertrofia y fuerza",
-    "notas_coach": "Monitorear hombro en press inclinado."
+    "notas_coach": "Monitorear hombro en press inclinado.",
+    "username": "lucas",
+    "password": "lucas123"
+  }
+];
+
+export const INITIAL_USERS: UserProfile[] = [
+  {
+    "id": "user_facu",
+    "username": "facu",
+    "password": "flg2026",
+    "nombre": "Facu LG",
+    "role": "coach",
+    "email": "facu@flgtrainer.com"
+  },
+  {
+    "id": "user_nahir",
+    "username": "nahir",
+    "password": "nahir123",
+    "nombre": "Nahir",
+    "role": "student",
+    "student_id": "student_nahir",
+    "email": "nahir@flgtrainer.com"
+  },
+  {
+    "id": "user_lucas",
+    "username": "lucas",
+    "password": "lucas123",
+    "nombre": "Lucas M.",
+    "role": "student",
+    "student_id": "student_lucas",
+    "email": "lucas@flgtrainer.com"
   }
 ];
