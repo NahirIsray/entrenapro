@@ -16,6 +16,8 @@ import {
   Trophy,
   Video,
   MessageCircle,
+  RefreshCw,
+  Link2,
 } from 'lucide-react';
 import { Routine, RoutineDay, RoutineExerciseItem, Student, DayFeedback } from '../types';
 import { VideoModal } from './VideoModal';
@@ -30,6 +32,7 @@ interface Props {
   onUpdateLog: (key: string, record: SetRecord) => void;
   onSaveFeedback: (feedback: DayFeedback) => void;
   onTriggerRestTimer: (seconds: number) => void;
+  onSyncDrive?: () => Promise<void> | void;
 }
 
 export const StudentWorkoutView: React.FC<Props> = ({
@@ -40,9 +43,11 @@ export const StudentWorkoutView: React.FC<Props> = ({
   onUpdateLog,
   onSaveFeedback,
   onTriggerRestTimer,
+  onSyncDrive,
 }) => {
   const [selectedWeek, setSelectedWeek] = useState<number>(student.semana_actual || 1);
   const [selectedDayNum, setSelectedDayNum] = useState<number>(1);
+  const [isSyncingDrive, setIsSyncingDrive] = useState<boolean>(false);
   const [activeVideo, setActiveVideo] = useState<{
     url: string;
     name: string;
@@ -255,6 +260,40 @@ export const StudentWorkoutView: React.FC<Props> = ({
             </div>
           </div>
         </div>
+
+        {/* Google Drive connected indicator & quick sync button */}
+        {(routine.drive_url || student.drive_url) && (
+          <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span>Planilla Google Drive vinculada</span>
+              {routine.ultima_sincronizacion && (
+                <span className="text-[10px] text-slate-500 hidden sm:inline">
+                  (Sincronizada: {new Date(routine.ultima_sincronizacion).toLocaleDateString()})
+                </span>
+              )}
+            </div>
+
+            {onSyncDrive && (
+              <button
+                onClick={async () => {
+                  setIsSyncingDrive(true);
+                  try {
+                    await onSyncDrive();
+                  } finally {
+                    setIsSyncingDrive(false);
+                  }
+                }}
+                disabled={isSyncingDrive}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-semibold transition active:scale-95 disabled:opacity-50"
+                title="Descargar las modificaciones más recientes de tu entrenador en Google Drive"
+              >
+                <RefreshCw className={`w-3 h-3 ${isSyncingDrive ? 'animate-spin' : ''}`} />
+                <span>{isSyncingDrive ? 'Actualizando...' : 'Actualizar desde Drive'}</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Week Selector (Pills 1 to 6) */}

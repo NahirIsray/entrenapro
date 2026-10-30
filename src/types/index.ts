@@ -49,6 +49,8 @@ export interface Routine {
   alumno_id?: string;
   semanas_total: number;
   creada_el: string;
+  drive_url?: string;
+  ultima_sincronizacion?: string;
   dias: RoutineDay[];
 }
 
@@ -64,6 +66,8 @@ export interface Student {
   foto_url?: string;
   username?: string;
   password?: string;
+  drive_url?: string;
+  ultima_sincronizacion?: string;
 }
 
 export interface SetLog {

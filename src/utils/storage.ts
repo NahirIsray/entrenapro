@@ -1,5 +1,5 @@
 import { Exercise, Routine, Student, DayFeedback, UserProfile, AuthSession } from '../types';
-import { INITIAL_EXERCISES, INITIAL_ROUTINE_NAHIR, INITIAL_STUDENTS, INITIAL_USERS } from '../data/gymData';
+import { INITIAL_EXERCISES, INITIAL_ROUTINE_NAHIR, INITIAL_ROUTINE_LUCAS, INITIAL_STUDENTS, INITIAL_USERS } from '../data/gymData';
 import { getSupabase } from './supabase';
 
 const KEYS = {
@@ -72,10 +72,10 @@ export const saveStoredExercises = (exercises: Exercise[]) => {
 export const getStoredRoutines = (): Routine[] => {
   try {
     const raw = localStorage.getItem(KEYS.ROUTINES);
-    if (!raw) return [INITIAL_ROUTINE_NAHIR];
+    if (!raw) return [INITIAL_ROUTINE_NAHIR, INITIAL_ROUTINE_LUCAS];
     return JSON.parse(raw);
   } catch {
-    return [INITIAL_ROUTINE_NAHIR];
+    return [INITIAL_ROUTINE_NAHIR, INITIAL_ROUTINE_LUCAS];
   }
 };
 

@@ -5156,6 +5156,7 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
   "id": "rutina_nahir_01",
   "nombre": "Rutina 6 Semanas - Nahir",
   "alumno_id": "student_nahir",
+  "drive_url": "https://docs.google.com/spreadsheets/d/1yGTBh1mEmLosxztz-N6sIIEt81w_NqURrMYwLicMZBQ/htmlview",
   "semanas_total": 6,
   "creada_el": "2026-10-21",
   "dias": [
@@ -7128,6 +7129,20 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
   ]
 };
 
+export const INITIAL_ROUTINE_LUCAS: Routine = {
+  "id": "rutina_lucas_01",
+  "nombre": "Rutina 6 Semanas - Lucas M.",
+  "alumno_id": "student_lucas",
+  "semanas_total": 6,
+  "creada_el": "2026-10-21",
+  "dias": [
+    { "id": "lucas_d1", "dia_num": 1, "nombre": "Día 1: Pecho y Bíceps", "items": [] },
+    { "id": "lucas_d2", "dia_num": 2, "nombre": "Día 2: Piernas y Core", "items": [] },
+    { "id": "lucas_d3", "dia_num": 3, "nombre": "Día 3: Espalda y Tríceps", "items": [] },
+    { "id": "lucas_d4", "dia_num": 4, "nombre": "Día 4: Hombros y Fuerza", "items": [] }
+  ]
+};
+
 export const INITIAL_STUDENTS: Student[] = [
   {
     "id": "student_nahir",
@@ -7135,6 +7150,7 @@ export const INITIAL_STUDENTS: Student[] = [
     "email": "nahir@flgtrainer.com",
     "telefono": "+54 9 11 1234-5678",
     "rutina_activa_id": "rutina_nahir_01",
+    "drive_url": "https://docs.google.com/spreadsheets/d/1yGTBh1mEmLosxztz-N6sIIEt81w_NqURrMYwLicMZBQ/htmlview",
     "semana_actual": 1,
     "objetivo": "Fuerza, tono muscular y postura",
     "notas_coach": "Enfoque en movilidad de cadera y técnica controlada en sentadillas y peso muerto.",
@@ -7146,7 +7162,7 @@ export const INITIAL_STUDENTS: Student[] = [
     "nombre": "Lucas M.",
     "email": "lucas@flgtrainer.com",
     "telefono": "+54 9 11 8765-4321",
-    "rutina_activa_id": "rutina_nahir_01",
+    "rutina_activa_id": "rutina_lucas_01",
     "semana_actual": 2,
     "objetivo": "Hipertrofia y fuerza",
     "notas_coach": "Monitorear hombro en press inclinado.",

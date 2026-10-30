@@ -6,6 +6,7 @@ import { RestTimer } from './components/RestTimer';
 import { SupabaseConfigModal } from './components/SupabaseConfigModal';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { UserRole, Student, Routine, Exercise, DayFeedback, UserProfile, AuthSession } from './types';
+import { importRoutineFromDriveUrl } from './utils/driveImporter';
 import {
   getStoredStudents,
   saveStoredStudents,
@@ -119,6 +120,59 @@ export const App: React.FC = () => {
     saveStoredUsers(updated);
   };
 
+  const handleSyncDriveForStudent = async (studentId: string) => {
+    const student = students.find((s) => s.id === studentId);
+    if (!student) return;
+    const routine = routines.find((r) => r.alumno_id === studentId || r.id === student.rutina_activa_id);
+    const driveUrl = student.drive_url || routine?.drive_url;
+    if (!driveUrl) return;
+
+    try {
+      const result = await importRoutineFromDriveUrl(
+        driveUrl,
+        `Rutina 6 Semanas - ${student.nombre}`,
+        studentId
+      );
+
+      const existingIds = new Set(exercises.map((e) => e.id));
+      const newEx = result.exercises.filter((e) => !existingIds.has(e.id));
+      if (newEx.length > 0) {
+        handleUpdateExercises([...exercises, ...newEx]);
+      }
+
+      const nowIso = new Date().toISOString();
+      const updatedRoutines = routines.map((r) => {
+        if (r.alumno_id === studentId || r.id === student.rutina_activa_id) {
+          return {
+            ...result.routine,
+            id: r.id,
+            alumno_id: studentId,
+            drive_url: driveUrl,
+            ultima_sincronizacion: nowIso,
+          };
+        }
+        return r;
+      });
+
+      const updatedStudents = students.map((s) => {
+        if (s.id === studentId) {
+          return {
+            ...s,
+            drive_url: driveUrl,
+            ultima_sincronizacion: nowIso,
+          };
+        }
+        return s;
+      });
+
+      handleUpdateRoutines(updatedRoutines);
+      handleUpdateStudents(updatedStudents);
+      alert(`✅ ¡Rutina sincronizada con los últimos cambios de Google Drive!`);
+    } catch (err: any) {
+      alert(`Error al actualizar desde Google Drive: ${err.message}`);
+    }
+  };
+
   // If not authenticated, render Login / Landing screen
   if (!session) {
     return (
@@ -167,6 +221,7 @@ export const App: React.FC = () => {
               onUpdateLog={handleUpdateLog}
               onSaveFeedback={handleSaveFeedback}
               onTriggerRestTimer={(seconds) => setAutoStartTimer(seconds)}
+              onSyncDrive={() => handleSyncDriveForStudent(activeStudent.id)}
             />
           ) : (
             <div className="p-8 text-center text-slate-400">

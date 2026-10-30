@@ -63,17 +63,6 @@ export const LoginScreen: React.FC<Props> = ({ users, onLoginSuccess }) => {
     });
   };
 
-  const handleQuickFill = (userKey: 'facu' | 'nahir') => {
-    if (userKey === 'facu') {
-      setUsername('facu');
-      setPassword('flg2026');
-    } else {
-      setUsername('nahir');
-      setPassword('nahir123');
-    }
-    setErrorMessage('');
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 flex flex-col justify-between text-slate-100 p-4 sm:p-6 selection:bg-emerald-500 selection:text-slate-950">
       <div className="max-w-md w-full mx-auto my-auto space-y-6 pt-4 pb-8">
@@ -196,29 +185,6 @@ export const LoginScreen: React.FC<Props> = ({ users, onLoginSuccess }) => {
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-
-          {/* Quick Demo Access Badges */}
-          <div className="pt-3 border-t border-slate-800/80">
-            <span className="block text-[11px] text-slate-400 text-center mb-2">
-              Acceso rápido:
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickFill('facu')}
-                className="py-2 px-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-[11px] text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition active:scale-95"
-              >
-                <span>👨‍🏫 Coach Facu</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickFill('nahir')}
-                className="py-2 px-2.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 text-[11px] text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition active:scale-95"
-              >
-                <span>🏋️‍♀️ Alumna Nahir</span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}

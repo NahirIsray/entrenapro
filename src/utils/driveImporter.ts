@@ -187,6 +187,8 @@ export const importRoutineFromDriveUrl = async (
     alumno_id: studentId,
     semanas_total: 6,
     creada_el: new Date().toISOString().split('T')[0],
+    drive_url: rawUrl,
+    ultima_sincronizacion: new Date().toISOString(),
     dias,
   };
 

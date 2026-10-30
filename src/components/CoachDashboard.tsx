@@ -21,6 +21,7 @@ import {
   Check,
   AlertCircle,
   Sparkles,
+  RefreshCw,
 } from 'lucide-react';
 import { Student, Routine, Exercise, DayFeedback, UserProfile } from '../types';
 import { RoutineEditor } from './RoutineEditor';
@@ -69,9 +70,17 @@ export const CoachDashboard: React.FC<Props> = ({
   const [newStudentGoal, setNewStudentGoal] = useState<string>('');
   const [newStudentUsername, setNewStudentUsername] = useState<string>('');
   const [newStudentPassword, setNewStudentPassword] = useState<string>('');
-  const [newStudentRoutineId, setNewStudentRoutineId] = useState<string>(routines[0]?.id || '');
+  const [newStudentRoutineMode, setNewStudentRoutineMode] = useState<'new' | 'drive' | 'template'>('new');
+  const [newStudentDriveUrl, setNewStudentDriveUrl] = useState<string>('');
+  const [newStudentTemplateId, setNewStudentTemplateId] = useState<string>(routines[0]?.id || '');
+  const [isSubmittingStudent, setIsSubmittingStudent] = useState<boolean>(false);
 
-  // Google Drive Importer Modal
+  // Direct Drive sync & link states
+  const [syncingStudentId, setSyncingStudentId] = useState<string | null>(null);
+  const [linkDriveModalStudent, setLinkDriveModalStudent] = useState<Student | null>(null);
+  const [linkDriveModalUrl, setLinkDriveModalUrl] = useState<string>('');
+
+  // Google Drive Importer Modal (general)
   const [showDriveModal, setShowDriveModal] = useState<boolean>(false);
   const [driveUrl, setDriveUrl] = useState<string>('https://docs.google.com/spreadsheets/d/1yGTBh1mEmLosxztz-N6sIIEt81w_NqURrMYwLicMZBQ/htmlview');
   const [targetStudentId, setTargetStudentId] = useState<string>(students[0]?.id || 'student_nahir');
@@ -98,25 +107,84 @@ export const CoachDashboard: React.FC<Props> = ({
     onUpdateRoutines([...routines, clone]);
   };
 
-  // Create new student with login credentials
-  const handleCreateStudent = (e: React.FormEvent) => {
+  // Helper to create an empty personal routine for a student
+  const createCleanRoutine = (id: string, studentName: string, studentId: string): Routine => ({
+    id,
+    nombre: `Rutina 6 Semanas - ${studentName}`,
+    alumno_id: studentId,
+    semanas_total: 6,
+    creada_el: new Date().toISOString().split('T')[0],
+    dias: [
+      { id: `${id}_d1`, dia_num: 1, nombre: 'Día 1: Movilidad y Piernas', items: [] },
+      { id: `${id}_d2`, dia_num: 2, nombre: 'Día 2: Torso Empuje', items: [] },
+      { id: `${id}_d3`, dia_num: 3, nombre: 'Día 3: Cadera y Glúteos', items: [] },
+      { id: `${id}_d4`, dia_num: 4, nombre: 'Día 4: Torso Tracción', items: [] },
+    ],
+  });
+
+  // Create new student with login credentials and their OWN separate routine
+  const handleCreateStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newStudentName) return;
+    if (!newStudentName.trim()) return;
 
     const studentId = `student_${Date.now()}`;
     const username = (newStudentUsername || newStudentName.toLowerCase().replace(/\s+/g, '')).trim();
     const password = (newStudentPassword || '123456').trim();
+    const newRoutineId = `rutina_${studentId}`;
+
+    setIsSubmittingStudent(true);
+    let assignedRoutine: Routine;
+
+    if (newStudentRoutineMode === 'drive' && newStudentDriveUrl.trim()) {
+      try {
+        const result = await importRoutineFromDriveUrl(
+          newStudentDriveUrl.trim(),
+          `Rutina 6 Semanas - ${newStudentName}`,
+          studentId
+        );
+        assignedRoutine = {
+          ...result.routine,
+          id: newRoutineId,
+          alumno_id: studentId,
+          drive_url: newStudentDriveUrl.trim(),
+          ultima_sincronizacion: new Date().toISOString(),
+        };
+        const existingIds = new Set(exercises.map((e) => e.id));
+        const newEx = result.exercises.filter((e) => !existingIds.has(e.id));
+        if (newEx.length > 0) {
+          onUpdateExercises([...exercises, ...newEx]);
+        }
+      } catch (err: any) {
+        alert(`Error al importar de Drive (${err.message}). Se creará una rutina limpia.`);
+        assignedRoutine = createCleanRoutine(newRoutineId, newStudentName, studentId);
+      }
+    } else if (newStudentRoutineMode === 'template' && newStudentTemplateId) {
+      const template = routines.find((r) => r.id === newStudentTemplateId) || routines[0];
+      assignedRoutine = {
+        ...JSON.parse(JSON.stringify(template)),
+        id: newRoutineId,
+        nombre: `Rutina 6 Semanas - ${newStudentName}`,
+        alumno_id: studentId,
+        creada_el: new Date().toISOString().split('T')[0],
+        drive_url: undefined,
+        ultima_sincronizacion: undefined,
+      };
+    } else {
+      assignedRoutine = createCleanRoutine(newRoutineId, newStudentName, studentId);
+    }
 
     const newStudent: Student = {
       id: studentId,
       nombre: newStudentName,
       email: newStudentEmail || `${username}@flgtrainer.com`,
-      rutina_activa_id: newStudentRoutineId || routines[0]?.id || '',
+      rutina_activa_id: assignedRoutine.id,
       semana_actual: 1,
       objetivo: newStudentGoal || 'Fuerza & Condición',
       notas_coach: 'Nuevo alumno ingresado.',
       username,
       password,
+      drive_url: assignedRoutine.drive_url,
+      ultima_sincronizacion: assignedRoutine.ultima_sincronizacion,
     };
 
     const newUserProfile: UserProfile = {
@@ -129,15 +197,152 @@ export const CoachDashboard: React.FC<Props> = ({
       email: newStudent.email,
     };
 
+    onUpdateRoutines([...routines, assignedRoutine]);
     onUpdateStudents([...students, newStudent]);
     onUpdateUsers([...users, newUserProfile]);
 
+    setIsSubmittingStudent(false);
     setShowNewStudentModal(false);
     setNewStudentName('');
     setNewStudentEmail('');
     setNewStudentGoal('');
     setNewStudentUsername('');
     setNewStudentPassword('');
+    setNewStudentDriveUrl('');
+    setNewStudentRoutineMode('new');
+  };
+
+  // Synchronize student routine with their Google Drive sheet
+  const handleSyncStudentDrive = async (student: Student) => {
+    const studentRoutine = routines.find(
+      (r) => r.alumno_id === student.id || r.id === student.rutina_activa_id
+    );
+    const driveUrlToSync = student.drive_url || studentRoutine?.drive_url;
+    if (!driveUrlToSync) {
+      setLinkDriveModalStudent(student);
+      setLinkDriveModalUrl('');
+      return;
+    }
+
+    setSyncingStudentId(student.id);
+    try {
+      const result = await importRoutineFromDriveUrl(
+        driveUrlToSync,
+        `Rutina 6 Semanas - ${student.nombre}`,
+        student.id
+      );
+
+      // Merge exercises into catalog
+      const existingIds = new Set(exercises.map((e) => e.id));
+      const newExercisesToAdd = result.exercises.filter((e) => !existingIds.has(e.id));
+      if (newExercisesToAdd.length > 0) {
+        onUpdateExercises([...exercises, ...newExercisesToAdd]);
+      }
+
+      const nowIso = new Date().toISOString();
+      const updatedRoutines = routines.map((r) => {
+        if (r.alumno_id === student.id || r.id === student.rutina_activa_id) {
+          return {
+            ...result.routine,
+            id: r.id,
+            alumno_id: student.id,
+            drive_url: driveUrlToSync,
+            ultima_sincronizacion: nowIso,
+          };
+        }
+        return r;
+      });
+
+      const updatedStudents = students.map((s) => {
+        if (s.id === student.id) {
+          return {
+            ...s,
+            drive_url: driveUrlToSync,
+            ultima_sincronizacion: nowIso,
+          };
+        }
+        return s;
+      });
+
+      onUpdateRoutines(updatedRoutines);
+      onUpdateStudents(updatedStudents);
+
+      alert(`✅ ¡Rutina sincronizada con éxito para ${student.nombre}! Se actualizaron los ejercicios y semanas desde Google Drive sin modificar los pesos cargados.`);
+    } catch (err: any) {
+      alert(`Error al sincronizar con Google Drive: ${err.message || 'Error desconocido'}`);
+    } finally {
+      setSyncingStudentId(null);
+    }
+  };
+
+  // Link a Google Drive sheet to a student
+  const handleLinkDriveToStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!linkDriveModalStudent || !linkDriveModalUrl.trim()) return;
+
+    const student = linkDriveModalStudent;
+    setSyncingStudentId(student.id);
+    try {
+      const result = await importRoutineFromDriveUrl(
+        linkDriveModalUrl.trim(),
+        `Rutina 6 Semanas - ${student.nombre}`,
+        student.id
+      );
+
+      const existingIds = new Set(exercises.map((e) => e.id));
+      const newEx = result.exercises.filter((e) => !existingIds.has(e.id));
+      if (newEx.length > 0) {
+        onUpdateExercises([...exercises, ...newEx]);
+      }
+
+      const nowIso = new Date().toISOString();
+      let routineUpdated = false;
+      const updatedRoutines = routines.map((r) => {
+        if (r.alumno_id === student.id || r.id === student.rutina_activa_id) {
+          routineUpdated = true;
+          return {
+            ...result.routine,
+            id: r.id,
+            alumno_id: student.id,
+            drive_url: linkDriveModalUrl.trim(),
+            ultima_sincronizacion: nowIso,
+          };
+        }
+        return r;
+      });
+
+      if (!routineUpdated) {
+        updatedRoutines.push({
+          ...result.routine,
+          id: `rutina_${student.id}`,
+          alumno_id: student.id,
+          drive_url: linkDriveModalUrl.trim(),
+          ultima_sincronizacion: nowIso,
+        });
+      }
+
+      const updatedStudents = students.map((s) => {
+        if (s.id === student.id) {
+          return {
+            ...s,
+            rutina_activa_id: `rutina_${student.id}`,
+            drive_url: linkDriveModalUrl.trim(),
+            ultima_sincronizacion: nowIso,
+          };
+        }
+        return s;
+      });
+
+      onUpdateRoutines(updatedRoutines);
+      onUpdateStudents(updatedStudents);
+      setLinkDriveModalStudent(null);
+      setLinkDriveModalUrl('');
+      alert(`✅ ¡Planilla de Google Drive vinculada y cargada para ${student.nombre}!`);
+    } catch (err: any) {
+      alert(`Error al vincular planilla de Drive: ${err.message}`);
+    } finally {
+      setSyncingStudentId(null);
+    }
   };
 
   // Delete student
@@ -346,14 +551,50 @@ export const CoachDashboard: React.FC<Props> = ({
                   </div>
 
                   {/* Routine Info */}
-                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80 text-xs space-y-1">
+                  <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80 text-xs space-y-2">
                     <div className="flex justify-between text-slate-400">
                       <span>Rutina activa:</span>
-                      <span className="font-bold text-slate-200">{assignedRoutine?.nombre}</span>
+                      <span className="font-bold text-slate-200 truncate max-w-[200px]" title={assignedRoutine?.nombre}>
+                        {assignedRoutine?.nombre}
+                      </span>
                     </div>
                     <div className="flex justify-between text-slate-400">
                       <span>Sesiones completadas:</span>
                       <span className="font-bold text-emerald-400">{completedDaysCount} días</span>
+                    </div>
+
+                    {/* Google Drive Status & Sync Button */}
+                    <div className="pt-2 border-t border-slate-900 flex items-center justify-between">
+                      {st.drive_url || assignedRoutine?.drive_url ? (
+                        <div className="flex items-center justify-between w-full gap-2">
+                          <span className="text-[11px] text-emerald-400 flex items-center gap-1">
+                            <Link2 className="w-3 h-3 flex-shrink-0" /> Planilla Drive
+                          </span>
+                          <button
+                            onClick={() => handleSyncStudentDrive(st)}
+                            disabled={syncingStudentId === st.id}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-semibold transition active:scale-95 disabled:opacity-50"
+                            title="Descargar las modificaciones más recientes hechas en Google Drive"
+                          >
+                            <RefreshCw className={`w-3 h-3 ${syncingStudentId === st.id ? 'animate-spin' : ''}`} />
+                            <span>{syncingStudentId === st.id ? 'Sincronizando...' : 'Actualizar Drive'}</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between w-full gap-2">
+                          <span className="text-[11px] text-slate-500">Sin planilla de Drive</span>
+                          <button
+                            onClick={() => {
+                              setLinkDriveModalStudent(st);
+                              setLinkDriveModalUrl('');
+                            }}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[11px] font-semibold transition active:scale-95"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>Vincular Drive</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -787,20 +1028,59 @@ export const CoachDashboard: React.FC<Props> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">
-                  Rutina Inicial Asignada
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+                  Plan de Rutina
                 </label>
-                <select
-                  value={newStudentRoutineId}
-                  onChange={(e) => setNewStudentRoutineId(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
-                >
-                  {routines.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.nombre}
-                    </option>
-                  ))}
-                </select>
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewStudentRoutineMode('new')}
+                    className={`p-2.5 rounded-xl border text-xs text-left transition ${
+                      newStudentRoutineMode === 'new'
+                        ? 'bg-emerald-500/15 border-emerald-500 text-white font-bold shadow'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    ✨ Rutina Propia
+                    <span className="block text-[10px] text-slate-400 font-normal mt-0.5">
+                      Crea un plan exclusivo para este alumno
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNewStudentRoutineMode('drive')}
+                    className={`p-2.5 rounded-xl border text-xs text-left transition ${
+                      newStudentRoutineMode === 'drive'
+                        ? 'bg-emerald-500/15 border-emerald-500 text-white font-bold shadow'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    📥 Cargar de Drive
+                    <span className="block text-[10px] text-slate-400 font-normal mt-0.5">
+                      Importar su planilla Google Sheet
+                    </span>
+                  </button>
+                </div>
+
+                {newStudentRoutineMode === 'drive' && (
+                  <div className="space-y-1.5 mt-2 bg-slate-950 p-3 rounded-xl border border-slate-800">
+                    <label className="block text-[11px] text-slate-300 font-semibold flex items-center gap-1">
+                      <Link2 className="w-3.5 h-3.5 text-emerald-400" /> Enlace de su Google Sheet:
+                    </label>
+                    <input
+                      type="url"
+                      required
+                      placeholder="https://docs.google.com/spreadsheets/d/.../edit"
+                      value={newStudentDriveUrl}
+                      onChange={(e) => setNewStudentDriveUrl(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                    />
+                    <p className="text-[10px] text-slate-500">
+                      Se importarán los ejercicios y semanas de este alumno en su rutina personal.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
@@ -813,9 +1093,82 @@ export const CoachDashboard: React.FC<Props> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs"
+                  disabled={isSubmittingStudent}
+                  className="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 disabled:opacity-50"
                 >
-                  Crear Alumno & Acceso
+                  {isSubmittingStudent ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Cargando...</span>
+                    </>
+                  ) : (
+                    <span>Crear Alumno & Acceso</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Link Drive Modal for existing student */}
+      {linkDriveModalStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Link2 className="w-4 h-4 text-emerald-400" />
+                <h3 className="font-bold text-base text-white">
+                  Vincular Google Drive a {linkDriveModalStudent.nombre}
+                </h3>
+              </div>
+              <button
+                onClick={() => setLinkDriveModalStudent(null)}
+                className="p-1 text-slate-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleLinkDriveToStudent} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 mb-1">
+                  Enlace de la planilla de Google Sheets:
+                </label>
+                <input
+                  type="url"
+                  required
+                  placeholder="https://docs.google.com/spreadsheets/d/.../edit"
+                  value={linkDriveModalUrl}
+                  onChange={(e) => setLinkDriveModalUrl(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white font-mono focus:outline-none focus:border-emerald-500"
+                />
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Asegúrate de que la planilla tenga permisos de <b>"Cualquiera con el enlace puede ver"</b>.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setLinkDriveModalStudent(null)}
+                  className="px-3.5 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={syncingStudentId === linkDriveModalStudent.id}
+                  className="px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {syncingStudentId === linkDriveModalStudent.id ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Cargando...</span>
+                    </>
+                  ) : (
+                    <span>Vincular & Cargar Rutina</span>
+                  )}
                 </button>
               </div>
             </form>
