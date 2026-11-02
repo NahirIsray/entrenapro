@@ -124,8 +124,10 @@ export const App: React.FC = () => {
     const student = students.find((s) => s.id === studentId);
     if (!student) return;
     const routine = routines.find((r) => r.alumno_id === studentId || r.id === student.rutina_activa_id);
-    const driveUrl = student.drive_url || routine?.drive_url;
-    if (!driveUrl) return;
+    const driveUrl =
+      student.drive_url ||
+      routine?.drive_url ||
+      'https://docs.google.com/spreadsheets/d/1yGTBh1mEmLosxztz-N6sIIEt81w_NqURrMYwLicMZBQ/htmlview';
 
     try {
       const result = await importRoutineFromDriveUrl(

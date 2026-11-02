@@ -317,39 +317,37 @@ export const StudentWorkoutView: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Google Drive connected indicator & quick sync button */}
-        {(routine.drive_url || student.drive_url) && (
-          <div className="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 flex-wrap gap-2">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span>Planilla Google Drive vinculada</span>
-              {routine.ultima_sincronizacion && (
-                <span className="text-[10px] text-slate-500 hidden sm:inline">
-                  (Sincronizada: {new Date(routine.ultima_sincronizacion).toLocaleDateString()})
-                </span>
-              )}
-            </div>
-
-            {onSyncDrive && (
-              <button
-                onClick={async () => {
-                  setIsSyncingDrive(true);
-                  try {
-                    await onSyncDrive();
-                  } finally {
-                    setIsSyncingDrive(false);
-                  }
-                }}
-                disabled={isSyncingDrive}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[11px] font-semibold transition active:scale-95 disabled:opacity-50"
-                title="Descargar las modificaciones más recientes de tu entrenador en Google Drive"
-              >
-                <RefreshCw className={`w-3 h-3 ${isSyncingDrive ? 'animate-spin' : ''}`} />
-                <span>{isSyncingDrive ? 'Actualizando...' : 'Actualizar desde Drive'}</span>
-              </button>
+        {/* Google Drive sync bar - prominent and always available */}
+        <div className="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-300 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50" />
+            <span className="font-semibold text-slate-200">Google Drive: Planilla Conectada</span>
+            {routine.ultima_sincronizacion && (
+              <span className="text-[11px] text-slate-400 hidden sm:inline">
+                ({new Date(routine.ultima_sincronizacion).toLocaleDateString()})
+              </span>
             )}
           </div>
-        )}
+
+          {onSyncDrive && (
+            <button
+              onClick={async () => {
+                setIsSyncingDrive(true);
+                try {
+                  await onSyncDrive();
+                } finally {
+                  setIsSyncingDrive(false);
+                }
+              }}
+              disabled={isSyncingDrive}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 transition active:scale-95 disabled:opacity-50"
+              title="Descargar las modificaciones más recientes y pesos de Facu en Google Drive"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingDrive ? 'animate-spin' : ''}`} />
+              <span>{isSyncingDrive ? 'Actualizando...' : '🔄 Actualizar desde Drive'}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Week Selector (Pills 1 to 6) */}
