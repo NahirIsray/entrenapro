@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Eye, ArrowLeft, AlertCircle } from 'lucide-react';
 import { Navbar } from './components/Navbar';
 import { StudentWorkoutView } from './components/StudentWorkoutView';
 import { CoachDashboard } from './components/CoachDashboard';
@@ -43,6 +44,9 @@ export const App: React.FC = () => {
     return session?.user.student_id || 'student_nahir';
   });
 
+  // When a coach clicks "Ver como {alumno}", previewStudentId is set so the coach can test their view
+  const [previewStudentId, setPreviewStudentId] = useState<string | null>(null);
+
   const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState<boolean>(false);
   const [autoStartTimer, setAutoStartTimer] = useState<number | null>(null);
 
@@ -67,6 +71,7 @@ export const App: React.FC = () => {
   const handleLoginSuccess = (newSession: AuthSession) => {
     setSession(newSession);
     saveStoredSession(newSession);
+    setPreviewStudentId(null);
     if (newSession.user.student_id) {
       setSelectedStudentId(newSession.user.student_id);
     }
@@ -74,11 +79,15 @@ export const App: React.FC = () => {
 
   const handleLogout = () => {
     setSession(null);
+    setPreviewStudentId(null);
     clearStoredSession();
   };
 
   const handleSelectStudent = (id: string) => {
     setSelectedStudentId(id);
+    if (session?.user.role === 'coach') {
+      setPreviewStudentId(id);
+    }
   };
 
   const handleUpdateLog = (logKey: string, record: SetRecord) => {
@@ -187,16 +196,19 @@ export const App: React.FC = () => {
 
   const currentUser = session.user;
   const isCoach = currentUser.role === 'coach';
+  const isPreviewMode = Boolean(isCoach && previewStudentId);
+  const isViewingAsStudent = currentUser.role === 'student' || isPreviewMode;
 
   // Target student for workout view
-  const activeStudent = isCoach
+  const activeStudent = isPreviewMode
+    ? students.find((s) => s.id === previewStudentId) || students[0]
+    : isCoach
     ? students.find((s) => s.id === selectedStudentId) || students[0]
     : students.find((s) => s.id === currentUser.student_id) || students[0];
 
   const activeRoutine =
     routines.find((r) => r.alumno_id === activeStudent.id) ||
-    routines.find((r) => r.id === activeStudent.rutina_activa_id) ||
-    routines[0];
+    routines.find((r) => r.id === activeStudent.rutina_activa_id);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-slate-950">
@@ -211,9 +223,28 @@ export const App: React.FC = () => {
         onLogout={handleLogout}
       />
 
+      {/* If Coach is previewing a student, show top notification banner */}
+      {isPreviewMode && (
+        <div className="sticky top-16 z-20 bg-gradient-to-r from-amber-950 via-slate-900 to-amber-950 border-b border-amber-500/30 px-3 sm:px-4 py-2.5 flex items-center justify-between text-xs text-amber-200 shadow-lg">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping flex-shrink-0" />
+            <span>
+              Modo Vista Previa: Estás viendo la app como <b className="text-white underline">{activeStudent.nombre}</b>
+            </span>
+          </div>
+          <button
+            onClick={() => setPreviewStudentId(null)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition active:scale-95 shadow-md shadow-amber-500/20"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Volver al Panel de Entrenador</span>
+          </button>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="flex-1">
-        {currentUser.role === 'student' ? (
+        {isViewingAsStudent ? (
           activeRoutine ? (
             <StudentWorkoutView
               student={activeStudent}
@@ -226,8 +257,24 @@ export const App: React.FC = () => {
               onSyncDrive={() => handleSyncDriveForStudent(activeStudent.id)}
             />
           ) : (
-            <div className="p-8 text-center text-slate-400">
-              No hay una rutina activa asignada. Pide a tu entrenador que configure tu plan.
+            <div className="max-w-md mx-auto mt-12 p-6 bg-slate-900 border border-slate-800 rounded-2xl text-center space-y-3 shadow-xl">
+              <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center mx-auto text-xl font-bold">
+                📋
+              </div>
+              <h3 className="font-bold text-white text-base">
+                {activeStudent.nombre} aún no tiene una rutina asignada
+              </h3>
+              <p className="text-xs text-slate-400">
+                Como entrenador, podés crearle una rutina personalizada, importar su planilla de Google Drive o usar una plantilla desde tu panel.
+              </p>
+              {isPreviewMode && (
+                <button
+                  onClick={() => setPreviewStudentId(null)}
+                  className="mt-2 px-4 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs transition active:scale-95 shadow-lg shadow-emerald-500/20"
+                >
+                  Volver al Panel para Asignar Rutina
+                </button>
+              )}
             </div>
           )
         ) : (
@@ -243,14 +290,15 @@ export const App: React.FC = () => {
             onUpdateExercises={handleUpdateExercises}
             onUpdateUsers={handleUpdateUsers}
             onSelectStudentToTest={(stId) => {
-              handleSelectStudent(stId);
+              setSelectedStudentId(stId);
+              setPreviewStudentId(stId);
             }}
           />
         )}
       </main>
 
       {/* Rest Timer (Accessible in student workout view) */}
-      {currentUser.role === 'student' && (
+      {isViewingAsStudent && (
         <RestTimer
           autoStartSeconds={autoStartTimer}
           onTimerEnd={() => setAutoStartTimer(null)}
