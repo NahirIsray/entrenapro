@@ -35,6 +35,47 @@ interface Props {
   onSyncDrive?: () => Promise<void> | void;
 }
 
+// Ultra-responsive local input to prevent network lag or focus loss while typing
+interface SetWeightInputProps {
+  initialValue: string;
+  placeholder: string;
+  onCommit: (val: string) => void;
+}
+
+const SetWeightInput: React.FC<SetWeightInputProps> = ({ initialValue, placeholder, onCommit }) => {
+  const [val, setVal] = useState<string>(initialValue);
+
+  React.useEffect(() => {
+    setVal(initialValue);
+  }, [initialValue]);
+
+  return (
+    <div className="relative">
+      <input
+        type="number"
+        step="0.5"
+        placeholder={placeholder}
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={() => {
+          if (val !== initialValue) {
+            onCommit(val);
+          }
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
+        className="w-16 sm:w-20 py-1 px-2 text-center bg-slate-900 border border-slate-700 rounded-lg text-white font-mono font-bold text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
+      />
+      <span className="absolute right-1.5 top-1.5 text-[10px] text-slate-500 pointer-events-none">
+        kg
+      </span>
+    </div>
+  );
+};
+
 export const StudentWorkoutView: React.FC<Props> = ({
   student,
   routine,
@@ -145,12 +186,18 @@ export const StudentWorkoutView: React.FC<Props> = ({
     const current = logs[logKey];
     const isNowCompleted = !current?.completado;
 
-    // Default weight from previous week if not filled
+    // Weight priority: 1) logged weight, 2) coach prescribed from Drive, 3) previous week, 4) '0'
     let kgs = current?.kgs || '';
-    if (!kgs && selectedWeek > 1) {
-      const prevKey = `${student.id}_w${selectedWeek - 1}_d${selectedDayNum}_${item.ejercicio_id}_s${setIdx}`;
-      if (logs[prevKey]?.kgs) {
-        kgs = logs[prevKey].kgs;
+    if (!kgs) {
+      const semanaKey = `semana_${selectedWeek}`;
+      const prescribedKgs = item.prescripcion?.[semanaKey]?.kgs?.trim();
+      if (prescribedKgs) {
+        kgs = prescribedKgs;
+      } else if (selectedWeek > 1) {
+        const prevKey = `${student.id}_w${selectedWeek - 1}_d${selectedDayNum}_${item.ejercicio_id}_s${setIdx}`;
+        if (logs[prevKey]?.kgs) {
+          kgs = logs[prevKey].kgs;
+        }
       }
     }
 
@@ -181,8 +228,17 @@ export const StudentWorkoutView: React.FC<Props> = ({
   const handleAdjustWeight = (item: RoutineExerciseItem, setIdx: number, delta: number) => {
     const logKey = `${student.id}_w${selectedWeek}_d${selectedDayNum}_${item.ejercicio_id}_s${setIdx}`;
     const current = logs[logKey];
-    const currentVal = parseFloat(current?.kgs || '0') || 0;
-    const nextVal = Math.max(0, currentVal + delta);
+    let baseVal = 0;
+    if (current?.kgs !== undefined && current?.kgs !== '') {
+      baseVal = parseFloat(current.kgs) || 0;
+    } else {
+      const semanaKey = `semana_${selectedWeek}`;
+      const prescribed = item.prescripcion?.[semanaKey]?.kgs?.trim();
+      if (prescribed) {
+        baseVal = parseFloat(prescribed) || 0;
+      }
+    }
+    const nextVal = Math.max(0, Math.round((baseVal + delta) * 10) / 10);
     onUpdateLog(logKey, {
       kgs: nextVal.toString(),
       completado: current?.completado || false,
@@ -400,6 +456,7 @@ export const StudentWorkoutView: React.FC<Props> = ({
               const semanaKey = `semana_${selectedWeek}`;
               const prescriptionSeries =
                 item.prescripcion?.[semanaKey]?.series || item.progresion || '3x10';
+              const prescribedKgs = item.prescripcion?.[semanaKey]?.kgs?.trim() || '';
               const badgeStyle = getPatternBadge(item.patron);
 
               // Get previous week reference weight
@@ -437,6 +494,12 @@ export const StudentWorkoutView: React.FC<Props> = ({
                         <span className="text-slate-400 font-mono">
                           Meta: <b className="text-slate-200">{prescriptionSeries}</b>
                         </span>
+                        {prescribedKgs && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold text-[11px] shadow-sm">
+                            <span>🏋️ Peso Facu:</span>
+                            <span className="font-mono text-amber-200 font-extrabold">{prescribedKgs} kg</span>
+                          </span>
+                        )}
                         {item.progresion && item.progresion !== prescriptionSeries && (
                           <span className="text-slate-500 text-[11px]">
                             ({item.progresion})
@@ -480,7 +543,8 @@ export const StudentWorkoutView: React.FC<Props> = ({
                       const logKey = `${student.id}_w${selectedWeek}_d${selectedDayNum}_${item.ejercicio_id}_s${setNum}`;
                       const log = logs[logKey];
                       const isDone = log?.completado || false;
-                      const currentKgs = log?.kgs || '';
+                      const currentKgs = log?.kgs !== undefined ? log.kgs : '';
+                      const effectivePlaceholder = prescribedKgs || '0';
 
                       return (
                         <div
@@ -509,19 +573,11 @@ export const StudentWorkoutView: React.FC<Props> = ({
                               <Minus className="w-3 h-3" />
                             </button>
 
-                            <div className="relative">
-                              <input
-                                type="number"
-                                step="0.5"
-                                placeholder="0"
-                                value={currentKgs}
-                                onChange={(e) => handleChangeWeight(item, setNum, e.target.value)}
-                                className="w-16 sm:w-20 py-1 px-2 text-center bg-slate-900 border border-slate-700 rounded-lg text-white font-mono font-bold text-sm focus:outline-none focus:border-emerald-500"
-                              />
-                              <span className="absolute right-1.5 top-1.5 text-[10px] text-slate-500 pointer-events-none">
-                                kg
-                              </span>
-                            </div>
+                            <SetWeightInput
+                              initialValue={currentKgs}
+                              placeholder={effectivePlaceholder}
+                              onCommit={(newVal) => handleChangeWeight(item, setNum, newVal)}
+                            />
 
                             <button
                               onClick={() => handleAdjustWeight(item, setNum, 2.5)}

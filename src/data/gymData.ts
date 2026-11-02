@@ -5411,6 +5411,23 @@ export const INITIAL_ROUTINE_NAHIR: Routine = {
           }
         },
         {
+          "id": "dia_1_prensa_a_45",
+          "bloque": "B3",
+          "ejercicio_id": "prensa_a_45",
+          "ejercicio_nombre": "Prensa a 45°",
+          "patron": "Rodilla Dominante",
+          "video_url": "https://www.youtube.com/watch?v=lgYgLBaJDpA",
+          "progresion": "Meseta 3x12",
+          "prescripcion": {
+            "semana_1": { "series": "3x12", "kgs": "40" },
+            "semana_2": { "series": "3x12", "kgs": "45" },
+            "semana_3": { "series": "3x10", "kgs": "50" },
+            "semana_4": { "series": "3x10", "kgs": "55" },
+            "semana_5": { "series": "4x8", "kgs": "60" },
+            "semana_6": { "series": "4x8", "kgs": "65" }
+          }
+        },
+        {
           "id": "dia_1_caminata_en_estocada_adelante",
           "bloque": "C1",
           "ejercicio_id": "caminata_en_estocada_adelante",

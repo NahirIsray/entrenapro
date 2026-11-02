@@ -125,8 +125,8 @@ export const RoutineEditor: React.FC<Props> = ({
     });
   };
 
-  // Update prescription series for a week
-  const handleUpdatePrescription = (itemId: string, weekNum: number, series: string) => {
+  // Update prescription series or kgs for a week
+  const handleUpdatePrescription = (itemId: string, weekNum: number, field: 'series' | 'kgs', val: string) => {
     const semanaKey = `semana_${weekNum}`;
     const updatedDias = editedRoutine.dias.map((d) => {
       if (d.dia_num === activeDayNum) {
@@ -134,13 +134,14 @@ export const RoutineEditor: React.FC<Props> = ({
           ...d,
           items: d.items.map((it) => {
             if (it.id === itemId) {
+              const currentPresc = it.prescripcion?.[semanaKey] || { series: it.progresion || '3x10', kgs: '' };
               return {
                 ...it,
                 prescripcion: {
                   ...it.prescripcion,
                   [semanaKey]: {
-                    ...it.prescripcion?.[semanaKey],
-                    series,
+                    ...currentPresc,
+                    [field]: val,
                   },
                 },
               };
@@ -299,21 +300,39 @@ export const RoutineEditor: React.FC<Props> = ({
                     </div>
                   </div>
 
-                  {/* 6 Weeks Prescription Editor */}
+                  {/* 6 Weeks Prescription Editor (Series & Kgs from Drive) */}
                   <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-1 border-t border-slate-900">
                     {[1, 2, 3, 4, 5, 6].map((w) => {
                       const semKey = `semana_${w}`;
                       const currentVal = it.prescripcion?.[semKey]?.series || it.progresion || '3x10';
+                      const currentKgs = it.prescripcion?.[semKey]?.kgs || '';
                       return (
-                        <div key={w} className="bg-slate-900/60 p-1.5 rounded-lg border border-slate-800/80">
-                          <label className="block text-[10px] font-mono text-slate-500 uppercase">
-                            Semana {w}
-                          </label>
+                        <div key={w} className="bg-slate-900/60 p-1.5 rounded-lg border border-slate-800/80 space-y-1">
+                          <div className="flex items-center justify-between">
+                            <label className="block text-[10px] font-mono text-slate-500 uppercase">
+                              Sem {w}
+                            </label>
+                            {currentKgs && (
+                              <span className="text-[10px] text-amber-400 font-bold font-mono">
+                                {currentKgs}kg
+                              </span>
+                            )}
+                          </div>
                           <input
                             type="text"
+                            placeholder="Series (ej: 4x8)"
                             value={currentVal}
-                            onChange={(e) => handleUpdatePrescription(it.id, w, e.target.value)}
-                            className="w-full mt-0.5 px-1.5 py-0.5 bg-slate-950 border border-slate-700/80 rounded text-xs text-white font-mono"
+                            onChange={(e) => handleUpdatePrescription(it.id, w, 'series', e.target.value)}
+                            className="w-full px-1.5 py-0.5 bg-slate-950 border border-slate-700/80 rounded text-xs text-white font-mono"
+                            title={`Series para Semana ${w}`}
+                          />
+                          <input
+                            type="text"
+                            placeholder="Kgs (Drive)"
+                            value={currentKgs}
+                            onChange={(e) => handleUpdatePrescription(it.id, w, 'kgs', e.target.value)}
+                            className="w-full px-1.5 py-0.5 bg-slate-950 border border-amber-500/30 rounded text-xs text-amber-300 font-mono"
+                            title={`Kgs objetivo para Semana ${w}`}
                           />
                         </div>
                       );

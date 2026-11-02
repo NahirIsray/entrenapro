@@ -119,9 +119,10 @@ export const getStoredLogs = (): WorkoutLogsMap => {
   }
 };
 
-export const saveStoredLogs = (logs: WorkoutLogsMap) => {
+export const saveStoredLogs = (logs: WorkoutLogsMap, immediate: boolean = false) => {
   localStorage.setItem(KEYS.LOGS, JSON.stringify(logs));
-  syncKeyToSupabase('workout_logs', logs);
+  // Debounce syncing logs to Supabase by 1000ms so typing weights is buttery smooth
+  syncKeyToSupabase('workout_logs', logs, immediate ? 0 : 1000);
 };
 
 // Feedback Storage
@@ -142,20 +143,47 @@ export const saveStoredFeedbacks = (feedbacks: FeedbacksMap) => {
   syncKeyToSupabase('feedbacks', feedbacks);
 };
 
-// Push to Supabase
-const syncKeyToSupabase = async (key: string, value: any) => {
+// Unique client instance ID per tab session to avoid self-echo re-renders
+export const CLIENT_INSTANCE_ID =
+  typeof window !== 'undefined'
+    ? (window as any).__FLG_CLIENT_ID ||
+      ((window as any).__FLG_CLIENT_ID = `client_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`)
+    : `client_${Date.now()}`;
+
+const syncDebounceTimers: Record<string, ReturnType<typeof setTimeout>> = {};
+
+// Push to Supabase with debounce option and client ID tagging
+export const syncKeyToSupabase = async (key: string, value: any, delayMs: number = 0) => {
   const supabase = getSupabase();
   if (!supabase) return;
 
-  try {
-    await supabase.from('entrenapro_data').upsert({
-      key,
-      value,
-      updated_at: new Date().toISOString(),
-      updated_by: 'app_user',
-    });
-  } catch (err) {
-    console.warn(`Error al sincronizar ${key} con Supabase:`, err);
+  const doSync = async () => {
+    try {
+      await supabase.from('entrenapro_data').upsert({
+        key,
+        value,
+        updated_at: new Date().toISOString(),
+        updated_by: CLIENT_INSTANCE_ID,
+      });
+    } catch (err) {
+      console.warn(`Error al sincronizar ${key} con Supabase:`, err);
+    }
+  };
+
+  if (delayMs > 0) {
+    if (syncDebounceTimers[key]) {
+      clearTimeout(syncDebounceTimers[key]);
+    }
+    syncDebounceTimers[key] = setTimeout(() => {
+      delete syncDebounceTimers[key];
+      doSync();
+    }, delayMs);
+  } else {
+    if (syncDebounceTimers[key]) {
+      clearTimeout(syncDebounceTimers[key]);
+      delete syncDebounceTimers[key];
+    }
+    await doSync();
   }
 };
 
@@ -201,7 +229,12 @@ export const subscribeToSupabaseRealtime = (onRemoteChange: () => void) => {
       'postgres_changes',
       { event: '*', schema: 'public', table: 'entrenapro_data' },
       (payload) => {
-        const row = payload.new as { key: string; value: any };
+        const row = payload.new as { key: string; value: any; updated_by?: string };
+        // Ignore remote echo of changes initiated by this exact client tab
+        if (row && row.updated_by === CLIENT_INSTANCE_ID) {
+          return;
+        }
+
         if (row && row.key) {
           if (row.key === 'exercises') localStorage.setItem(KEYS.EXERCISES, JSON.stringify(row.value));
           if (row.key === 'routines') localStorage.setItem(KEYS.ROUTINES, JSON.stringify(row.value));

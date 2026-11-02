@@ -39,6 +39,11 @@ export const extractSheetId = (url: string): string | null => {
   return match ? match[1] : null;
 };
 
+export const extractGid = (url: string): string | null => {
+  const match = url.match(/[?&#]gid=([0-9]+)/);
+  return match ? match[1] : null;
+};
+
 export const importRoutineFromDriveUrl = async (
   rawUrl: string,
   routineName: string = 'Rutina Importada desde Drive',
@@ -49,7 +54,10 @@ export const importRoutineFromDriveUrl = async (
     throw new Error('No se pudo encontrar el ID de la planilla de Google Sheets en el enlace proporcionado.');
   }
 
-  const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+  const gid = extractGid(rawUrl);
+  const exportUrl = gid
+    ? `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`
+    : `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
 
   const response = await fetch(exportUrl);
   if (!response.ok) {
@@ -128,7 +136,11 @@ export const importRoutineFromDriveUrl = async (
       const colS = 7 + (w - 1) * 2;
       const colK = colS + 1;
       const s = row[colS]?.trim() || '';
-      const k = row[colK]?.trim() || '';
+      let k = row[colK]?.trim() || '';
+      // Normalize weight (e.g. "40 kg", "12,5" -> "12.5")
+      if (k) {
+        k = k.replace(/kgs?/gi, '').replace(/\s+/g, '').replace(',', '.').trim();
+      }
       semanas[`semana_${w}`] = { series: s, kgs: k };
       if (s || k) hasAnyPrescription = true;
     }
