@@ -22,6 +22,9 @@ import {
   AlertCircle,
   Sparkles,
   RefreshCw,
+  Scale,
+  Clock,
+  X,
 } from 'lucide-react';
 import { Student, Routine, Exercise, DayFeedback, UserProfile } from '../types';
 import { RoutineEditor } from './RoutineEditor';
@@ -70,10 +73,16 @@ export const CoachDashboard: React.FC<Props> = ({
   const [newStudentGoal, setNewStudentGoal] = useState<string>('');
   const [newStudentUsername, setNewStudentUsername] = useState<string>('');
   const [newStudentPassword, setNewStudentPassword] = useState<string>('');
-  const [newStudentRoutineMode, setNewStudentRoutineMode] = useState<'new' | 'drive' | 'template'>('new');
+  const [newStudentWeight, setNewStudentWeight] = useState<string>('');
+  const [newStudentRoutineMode, setNewStudentRoutineMode] = useState<'template' | 'drive' | 'new'>('template');
   const [newStudentDriveUrl, setNewStudentDriveUrl] = useState<string>('');
   const [newStudentTemplateId, setNewStudentTemplateId] = useState<string>(routines[0]?.id || '');
   const [isSubmittingStudent, setIsSubmittingStudent] = useState<boolean>(false);
+
+  // Body weight quick edit modal for coach
+  const [editingWeightStudent, setEditingWeightStudent] = useState<Student | null>(null);
+  const [editWeightVal, setEditWeightVal] = useState<string>('');
+  const [editWeightNote, setEditWeightNote] = useState<string>('');
 
   // Direct Drive sync & link states
   const [syncingStudentId, setSyncingStudentId] = useState<string | null>(null);
@@ -134,6 +143,7 @@ export const CoachDashboard: React.FC<Props> = ({
 
     setIsSubmittingStudent(true);
     let assignedRoutine: Routine;
+    const baseRoutineWithExercises = routines.find((r) => r.dias.some((d) => d.items.length > 0)) || routines[0];
 
     if (newStudentRoutineMode === 'drive' && newStudentDriveUrl.trim()) {
       try {
@@ -155,13 +165,24 @@ export const CoachDashboard: React.FC<Props> = ({
           onUpdateExercises([...exercises, ...newEx]);
         }
       } catch (err: any) {
-        alert(`Error al importar de Drive (${err.message}). Se creará una rutina limpia.`);
-        assignedRoutine = createCleanRoutine(newRoutineId, newStudentName, studentId);
+        alert(`Error al importar de Drive (${err.message}). Se usará la rutina base de 6 semanas.`);
+        assignedRoutine = {
+          ...JSON.parse(JSON.stringify(baseRoutineWithExercises)),
+          id: newRoutineId,
+          nombre: `Rutina 6 Semanas - ${newStudentName}`,
+          alumno_id: studentId,
+          creada_el: new Date().toISOString().split('T')[0],
+          drive_url: undefined,
+          ultima_sincronizacion: undefined,
+        };
       }
-    } else if (newStudentRoutineMode === 'template' && newStudentTemplateId) {
-      const template = routines.find((r) => r.id === newStudentTemplateId) || routines[0];
+    } else if (newStudentRoutineMode === 'new') {
+      assignedRoutine = createCleanRoutine(newRoutineId, newStudentName, studentId);
+    } else {
+      // Default: 'template' -> clone base routine with all 6 weeks & exercises
+      const templateToUse = (newStudentTemplateId && routines.find((r) => r.id === newStudentTemplateId)) || baseRoutineWithExercises;
       assignedRoutine = {
-        ...JSON.parse(JSON.stringify(template)),
+        ...JSON.parse(JSON.stringify(templateToUse)),
         id: newRoutineId,
         nombre: `Rutina 6 Semanas - ${newStudentName}`,
         alumno_id: studentId,
@@ -169,9 +190,10 @@ export const CoachDashboard: React.FC<Props> = ({
         drive_url: undefined,
         ultima_sincronizacion: undefined,
       };
-    } else {
-      assignedRoutine = createCleanRoutine(newRoutineId, newStudentName, studentId);
     }
+
+    const parsedWeight = parseFloat(newStudentWeight.replace(',', '.'));
+    const initialWeight = !isNaN(parsedWeight) && parsedWeight > 0 ? parsedWeight : undefined;
 
     const newStudent: Student = {
       id: studentId,
@@ -185,6 +207,17 @@ export const CoachDashboard: React.FC<Props> = ({
       password,
       drive_url: assignedRoutine.drive_url,
       ultima_sincronizacion: assignedRoutine.ultima_sincronizacion,
+      peso_corporal: initialWeight,
+      peso_inicial: initialWeight,
+      historial_peso: initialWeight
+        ? [
+            {
+              fecha: new Date().toISOString(),
+              peso: initialWeight,
+              nota: 'Peso inicial al ingresar',
+            },
+          ]
+        : [],
     };
 
     const newUserProfile: UserProfile = {
@@ -208,8 +241,79 @@ export const CoachDashboard: React.FC<Props> = ({
     setNewStudentGoal('');
     setNewStudentUsername('');
     setNewStudentPassword('');
+    setNewStudentWeight('');
     setNewStudentDriveUrl('');
-    setNewStudentRoutineMode('new');
+    setNewStudentRoutineMode('template');
+  };
+
+  // Assign full 6-week base routine to a student who has 0 exercises
+  const handleAssignBaseRoutine = (student: Student) => {
+    const baseRoutineWithExercises = routines.find((r) => r.dias.some((d) => d.items.length > 0));
+    if (!baseRoutineWithExercises) {
+      alert('No se encontró una rutina base con ejercicios.');
+      return;
+    }
+
+    const clonedRoutine: Routine = {
+      ...JSON.parse(JSON.stringify(baseRoutineWithExercises)),
+      id: `rutina_${student.id}`,
+      nombre: `Rutina 6 Semanas - ${student.nombre}`,
+      alumno_id: student.id,
+      creada_el: new Date().toISOString().split('T')[0],
+      drive_url: student.drive_url,
+      ultima_sincronizacion: student.ultima_sincronizacion,
+    };
+
+    const otherRoutines = routines.filter(
+      (r) => r.id !== student.rutina_activa_id && r.id !== clonedRoutine.id && r.alumno_id !== student.id
+    );
+    const updatedRoutines = [...otherRoutines, clonedRoutine];
+
+    const updatedStudents = students.map((s) => {
+      if (s.id === student.id) {
+        return {
+          ...s,
+          rutina_activa_id: clonedRoutine.id,
+        };
+      }
+      return s;
+    });
+
+    onUpdateRoutines(updatedRoutines);
+    onUpdateStudents(updatedStudents);
+    alert(`✅ ¡Se asignó la rutina base de 6 semanas completa para ${student.nombre}! Ahora ya tiene todos los ejercicios y bloques.`);
+  };
+
+  // Coach save/update student body weight
+  const handleSaveCoachStudentWeight = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingWeightStudent) return;
+    const parsed = parseFloat(editWeightVal.replace(',', '.'));
+    if (isNaN(parsed) || parsed <= 0) return;
+
+    const record = {
+      fecha: new Date().toISOString(),
+      peso: parsed,
+      nota: editWeightNote.trim() || undefined,
+    };
+
+    const updatedHistory = [...(editingWeightStudent.historial_peso || []), record];
+    const updatedStudents = students.map((s) => {
+      if (s.id === editingWeightStudent.id) {
+        return {
+          ...s,
+          peso_corporal: parsed,
+          peso_inicial: s.peso_inicial || parsed,
+          historial_peso: updatedHistory,
+        };
+      }
+      return s;
+    });
+
+    onUpdateStudents(updatedStudents);
+    setEditingWeightStudent(null);
+    setEditWeightVal('');
+    setEditWeightNote('');
   };
 
   // Synchronize student routine with their Google Drive sheet
@@ -596,6 +700,68 @@ export const CoachDashboard: React.FC<Props> = ({
                         </div>
                       )}
                     </div>
+                  </div>
+
+                  {/* Empty Routine Warning & 1-Click Fix */}
+                  {assignedRoutine && assignedRoutine.dias.reduce((acc, d) => acc + d.items.length, 0) === 0 && (
+                    <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 space-y-2">
+                      <div className="flex items-center gap-2 text-amber-300 text-xs">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        <div>
+                          <p className="font-bold">⚠️ Sin ejercicios en su rutina</p>
+                          <p className="text-[10px] text-amber-300/80">Este alumno aún no tiene ejercicios asignados para entrenar.</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleAssignBaseRoutine(st)}
+                        className="w-full py-1.5 px-3 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-95"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Asignar Rutina Base de 6 Semanas</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Body Weight Control & Evolution */}
+                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800/80 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
+                        <Scale className="w-3.5 h-3.5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 block font-medium">Peso Corporal:</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono font-bold text-white text-xs">
+                            {st.peso_corporal ? `${st.peso_corporal} kg` : 'Sin registrar'}
+                          </span>
+                          {st.peso_inicial && st.peso_corporal && Number(st.peso_inicial) !== Number(st.peso_corporal) && (
+                            <span
+                              className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                Number(st.peso_corporal) < Number(st.peso_inicial)
+                                  ? 'bg-emerald-500/20 text-emerald-400'
+                                  : 'bg-amber-500/20 text-amber-400'
+                              }`}
+                            >
+                              {Number(st.peso_corporal) - Number(st.peso_inicial) > 0 ? '+' : ''}
+                              {(Number(st.peso_corporal) - Number(st.peso_inicial)).toFixed(1)} kg
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setEditingWeightStudent(st);
+                        setEditWeightVal(st.peso_corporal?.toString() || '');
+                        setEditWeightNote('');
+                      }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-850 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[11px] font-semibold transition active:scale-95"
+                      title="Registrar o actualizar pesaje de este alumno"
+                    >
+                      <Scale className="w-3 h-3 text-emerald-400" />
+                      <span>{st.peso_corporal ? 'Actualizar' : '+ Registrar'}</span>
+                    </button>
                   </div>
 
                   {/* Latest Feedback / RPE */}
@@ -1014,36 +1180,57 @@ export const CoachDashboard: React.FC<Props> = ({
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 mb-1">
-                  Objetivo / Enfoque
-                </label>
-                <input
-                  type="text"
-                  placeholder="Ej: Hipertrofia, aumento de fuerza..."
-                  value={newStudentGoal}
-                  onChange={(e) => setNewStudentGoal(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
-                />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1">
+                    Objetivo / Enfoque
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Hipertrofia, Fuerza..."
+                    value={newStudentGoal}
+                    onChange={(e) => setNewStudentGoal(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1 flex items-center gap-1">
+                    <Scale className="w-3.5 h-3.5 text-emerald-400" /> Peso Inicial (kg)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="Ej: 70.5"
+                      value={newStudentWeight}
+                      onChange={(e) => setNewStudentWeight(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-bold">
+                      kg
+                    </span>
+                  </div>
+                </div>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
                   Plan de Rutina
                 </label>
-                <div className="grid grid-cols-2 gap-2 mb-2">
+                <div className="grid grid-cols-3 gap-2 mb-2">
                   <button
                     type="button"
-                    onClick={() => setNewStudentRoutineMode('new')}
+                    onClick={() => setNewStudentRoutineMode('template')}
                     className={`p-2.5 rounded-xl border text-xs text-left transition ${
-                      newStudentRoutineMode === 'new'
+                      newStudentRoutineMode === 'template'
                         ? 'bg-emerald-500/15 border-emerald-500 text-white font-bold shadow'
                         : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
                     }`}
                   >
-                    ✨ Rutina Propia
+                    📋 Rutina Base
                     <span className="block text-[10px] text-slate-400 font-normal mt-0.5">
-                      Crea un plan exclusivo para este alumno
+                      6 semanas con ejercicios
                     </span>
                   </button>
 
@@ -1056,9 +1243,24 @@ export const CoachDashboard: React.FC<Props> = ({
                         : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
                     }`}
                   >
-                    📥 Cargar de Drive
+                    📥 Cargar Drive
                     <span className="block text-[10px] text-slate-400 font-normal mt-0.5">
-                      Importar su planilla Google Sheet
+                      Desde Google Sheets
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNewStudentRoutineMode('new')}
+                    className={`p-2.5 rounded-xl border text-xs text-left transition ${
+                      newStudentRoutineMode === 'new'
+                        ? 'bg-emerald-500/15 border-emerald-500 text-white font-bold shadow'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    ⚪ En Blanco
+                    <span className="block text-[10px] text-slate-400 font-normal mt-0.5">
+                      Sin ejercicios (vacía)
                     </span>
                   </button>
                 </div>
@@ -1176,6 +1378,111 @@ export const CoachDashboard: React.FC<Props> = ({
         </div>
       )}
 
+      {/* Coach Quick Body Weight Modal */}
+      {editingWeightStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-6 text-white shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <Scale className="w-4 h-4 text-emerald-400" />
+                <h3 className="font-bold text-base text-white">
+                  Registrar Peso: {editingWeightStudent.nombre}
+                </h3>
+              </div>
+              <button
+                onClick={() => setEditingWeightStudent(null)}
+                className="p-1 text-slate-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveCoachStudentWeight} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                  Peso Actual (kg)
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.1"
+                    required
+                    autoFocus
+                    placeholder="Ej: 72.5"
+                    value={editWeightVal}
+                    onChange={(e) => setEditWeightVal(e.target.value)}
+                    className="w-full pl-3 pr-12 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-lg font-bold focus:border-emerald-500 focus:outline-none"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400 font-bold">
+                    kg
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                  Nota / Observación (Opcional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej: Control mensual, pesaje en balanza del gimnasio..."
+                  value={editWeightNote}
+                  onChange={(e) => setEditWeightNote(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:border-emerald-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingWeightStudent(null)}
+                  className="flex-1 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 rounded-xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20"
+                >
+                  Guardar Pesaje
+                </button>
+              </div>
+            </form>
+
+            {/* Weight history */}
+            {editingWeightStudent.historial_peso && editingWeightStudent.historial_peso.length > 0 && (
+              <div className="pt-2 border-t border-slate-800 space-y-1.5">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Historial de Registros
+                </span>
+                <div className="max-h-32 overflow-y-auto space-y-1 pr-1">
+                  {[...editingWeightStudent.historial_peso].reverse().map((wp, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center justify-between p-2 rounded-lg bg-slate-950 text-xs border border-slate-800/80"
+                    >
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] text-slate-500 block">
+                          {new Date(wp.fecha).toLocaleDateString('es-AR', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </span>
+                        {wp.nota && <span className="text-[11px] text-slate-300 italic">{wp.nota}</span>}
+                      </div>
+                      <span className="font-mono font-bold text-emerald-400">
+                        {wp.peso} kg
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Student Logs Inspector Modal */}
       {selectedStudentForLogs && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-black/80 backdrop-blur-sm animate-fadeIn">
@@ -1193,32 +1500,101 @@ export const CoachDashboard: React.FC<Props> = ({
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto py-3 space-y-3">
-              {Object.keys(feedbacks)
-                .filter((k) => k.startsWith(`${selectedStudentForLogs.id}_`))
-                .map((k) => {
-                  const fb = feedbacks[k];
-                  return (
-                    <div key={k} className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-emerald-400">
-                          Semana {fb.semana} - Día {fb.dia_num}
+            <div className="flex-1 overflow-y-auto py-3 space-y-4">
+              {/* Body Weight Summary */}
+              {selectedStudentForLogs.historial_peso && selectedStudentForLogs.historial_peso.length > 0 && (
+                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-white flex items-center gap-1.5">
+                      <Scale className="w-3.5 h-3.5 text-emerald-400" /> Control de Peso Corporal
+                    </span>
+                    <span className="font-mono font-bold text-emerald-400">
+                      Actual: {selectedStudentForLogs.peso_corporal} kg
+                    </span>
+                  </div>
+                  <div className="max-h-28 overflow-y-auto space-y-1 pr-1">
+                    {[...selectedStudentForLogs.historial_peso].reverse().map((wp, i) => (
+                      <div key={i} className="flex justify-between text-[11px] text-slate-400">
+                        <span>
+                          {new Date(wp.fecha).toLocaleDateString()} {wp.nota ? `(${wp.nota})` : ''}
                         </span>
-                        <span className="font-mono text-amber-400 font-bold">RPE {fb.rpe}/10</span>
+                        <span className="font-mono font-bold text-white">{wp.peso} kg</span>
                       </div>
-                      {fb.notas && <p className="text-xs text-slate-300">"{fb.notas}"</p>}
-                      <p className="text-[10px] text-slate-500">
-                        {new Date(fb.fecha).toLocaleString()}
-                      </p>
-                    </div>
-                  );
-                })}
-
-              {Object.keys(feedbacks).filter((k) => k.startsWith(`${selectedStudentForLogs.id}_`)).length === 0 && (
-                <div className="text-center py-8 text-slate-500 text-xs">
-                  Este alumno aún no ha registrado entrenamientos finalizados.
+                    ))}
+                  </div>
                 </div>
               )}
+
+              {/* RPE Feedbacks */}
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-slate-300 block uppercase tracking-wider">
+                  Sesiones Finalizadas y RPE
+                </span>
+                {Object.keys(feedbacks)
+                  .filter((k) => k.startsWith(`${selectedStudentForLogs.id}_`))
+                  .map((k) => {
+                    const fb = feedbacks[k];
+                    return (
+                      <div key={k} className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-bold text-emerald-400">
+                            Semana {fb.semana} - Día {fb.dia_num}
+                          </span>
+                          <span className="font-mono text-amber-400 font-bold">RPE {fb.rpe}/10</span>
+                        </div>
+                        {fb.notas && <p className="text-xs text-slate-300">"{fb.notas}"</p>}
+                        <p className="text-[10px] text-slate-500">
+                          {new Date(fb.fecha).toLocaleString()}
+                        </p>
+                      </div>
+                    );
+                  })}
+
+                {Object.keys(feedbacks).filter((k) => k.startsWith(`${selectedStudentForLogs.id}_`)).length === 0 && (
+                  <div className="text-center py-4 text-slate-500 text-xs">
+                    Este alumno aún no ha registrado entrenamientos finalizados.
+                  </div>
+                )}
+              </div>
+
+              {/* Exercise Logged Weights / Times */}
+              {(() => {
+                const studentLogs = Object.keys(logs)
+                  .filter((k) => k.startsWith(`${selectedStudentForLogs.id}_`))
+                  .map((k) => ({ key: k, log: logs[k] }))
+                  .filter((item) => item.log.kgs || item.log.completado);
+
+                if (studentLogs.length === 0) return null;
+
+                return (
+                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+                    <span className="font-bold text-white text-xs block uppercase tracking-wider">
+                      Cargas y Tiempos Registrados por Serie ({studentLogs.length})
+                    </span>
+                    <div className="max-h-52 overflow-y-auto space-y-1 pr-1">
+                      {studentLogs.map(({ key, log }) => {
+                        const parts = key.split('_');
+                        const week = parts[1]?.replace('w', 'Sem ');
+                        const day = parts[2]?.replace('d', 'Día ');
+                        const setNum = parts[parts.length - 1]?.replace('s', 'Serie #');
+                        return (
+                          <div
+                            key={key}
+                            className="flex items-center justify-between text-xs p-2 bg-slate-900 rounded-lg border border-slate-800/80"
+                          >
+                            <span className="text-slate-300">
+                              {week} · {day} · {setNum}
+                            </span>
+                            <span className="font-mono font-bold text-emerald-400">
+                              {log.kgs ? `${log.kgs}` : 'Hecho'} {log.completado ? '✓' : ''}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>

@@ -18,6 +18,13 @@ import {
   MessageCircle,
   RefreshCw,
   Link2,
+  Clock,
+  Dumbbell,
+  Scale,
+  History,
+  X,
+  TrendingDown,
+  TrendingUp,
 } from 'lucide-react';
 import { Routine, RoutineDay, RoutineExerciseItem, Student, DayFeedback } from '../types';
 import { VideoModal } from './VideoModal';
@@ -33,16 +40,18 @@ interface Props {
   onSaveFeedback: (feedback: DayFeedback) => void;
   onTriggerRestTimer: (seconds: number) => void;
   onSyncDrive?: () => Promise<void> | void;
+  onUpdateStudent?: (student: Student) => void;
 }
 
 // Ultra-responsive local input to prevent network lag or focus loss while typing
 interface SetWeightInputProps {
   initialValue: string;
   placeholder: string;
+  unit: 'kg' | 'seg';
   onCommit: (val: string) => void;
 }
 
-const SetWeightInput: React.FC<SetWeightInputProps> = ({ initialValue, placeholder, onCommit }) => {
+const SetWeightInput: React.FC<SetWeightInputProps> = ({ initialValue, placeholder, unit, onCommit }) => {
   const [val, setVal] = useState<string>(initialValue);
 
   React.useEffect(() => {
@@ -53,7 +62,7 @@ const SetWeightInput: React.FC<SetWeightInputProps> = ({ initialValue, placehold
     <div className="relative">
       <input
         type="number"
-        step="0.5"
+        step={unit === 'seg' ? '1' : '0.5'}
         placeholder={placeholder}
         value={val}
         onChange={(e) => setVal(e.target.value)}
@@ -69,8 +78,8 @@ const SetWeightInput: React.FC<SetWeightInputProps> = ({ initialValue, placehold
         }}
         className="w-16 sm:w-20 py-1 px-2 text-center bg-slate-900 border border-slate-700 rounded-lg text-white font-mono font-bold text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
       />
-      <span className="absolute right-1.5 top-1.5 text-[10px] text-slate-500 pointer-events-none">
-        kg
+      <span className="absolute right-1.5 top-1.5 text-[10px] text-slate-400 font-mono font-bold pointer-events-none">
+        {unit === 'seg' ? 's' : 'kg'}
       </span>
     </div>
   );
@@ -85,6 +94,7 @@ export const StudentWorkoutView: React.FC<Props> = ({
   onSaveFeedback,
   onTriggerRestTimer,
   onSyncDrive,
+  onUpdateStudent,
 }) => {
   const [selectedWeek, setSelectedWeek] = useState<number>(student.semana_actual || 1);
   const [selectedDayNum, setSelectedDayNum] = useState<number>(1);
@@ -94,6 +104,14 @@ export const StudentWorkoutView: React.FC<Props> = ({
     name: string;
     patron?: string;
   } | null>(null);
+
+  // Unit toggle overrides per exercise ('kg' for weights or 'seg' for time/seconds)
+  const [unitOverrides, setUnitOverrides] = useState<Record<string, 'kg' | 'seg'>>({});
+
+  // Body weight tracking modal state
+  const [showWeightModal, setShowWeightModal] = useState<boolean>(false);
+  const [newWeightVal, setNewWeightVal] = useState<string>(student.peso_corporal?.toString() || '');
+  const [newWeightNote, setNewWeightNote] = useState<string>('');
 
   // Find active day
   const currentDay: RoutineDay | undefined =
@@ -106,6 +124,77 @@ export const StudentWorkoutView: React.FC<Props> = ({
   const [rpe, setRpe] = useState<number>(existingFeedback?.rpe || 8);
   const [feedbackNotes, setFeedbackNotes] = useState<string>(existingFeedback?.notas || '');
   const [savedDaySuccess, setSavedDaySuccess] = useState<boolean>(false);
+
+  // Helper to determine if an exercise is time-based (e.g. circuits, 10'', 30s) or weight-based
+  const getExerciseUnit = (item: RoutineExerciseItem): 'kg' | 'seg' => {
+    if (unitOverrides[item.id]) return unitOverrides[item.id];
+    if (item.unidad) return item.unidad;
+
+    const b = (item.bloque || '').toLowerCase();
+    if (b.includes('circ')) return 'seg';
+
+    const semanaKey = `semana_${selectedWeek}`;
+    const presc = (item.prescripcion?.[semanaKey]?.series || item.progresion || '').toLowerCase();
+    const kgsVal = (item.prescripcion?.[semanaKey]?.kgs || '').toLowerCase();
+
+    // Look for seconds marks: '', ", seg, s
+    if (
+      presc.includes("''") ||
+      presc.includes('"') ||
+      presc.includes('seg') ||
+      /\d+\s*s\b/.test(presc) ||
+      kgsVal.includes("''") ||
+      kgsVal.includes('"') ||
+      kgsVal.includes('s')
+    ) {
+      return 'seg';
+    }
+
+    if (item.patron === 'Movilidad' || item.patron === 'Core') {
+      if (presc.includes("''") || presc.includes('"') || !presc.includes('x')) {
+        return 'seg';
+      }
+    }
+
+    return 'kg';
+  };
+
+  const handleToggleUnit = (itemId: string) => {
+    setUnitOverrides((prev) => {
+      const current = prev[itemId] || getExerciseUnit(routine.dias.flatMap(d => d.items).find(i => i.id === itemId) || { id: itemId } as any);
+      return {
+        ...prev,
+        [itemId]: current === 'kg' ? 'seg' : 'kg',
+      };
+    });
+  };
+
+  // Save new body weight measurement
+  const handleSaveStudentWeight = (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = parseFloat(newWeightVal.replace(',', '.'));
+    if (isNaN(parsed) || parsed <= 0) return;
+
+    const record = {
+      fecha: new Date().toISOString(),
+      peso: parsed,
+      nota: newWeightNote.trim() || undefined,
+    };
+
+    const updatedHistory = [...(student.historial_peso || []), record];
+    const updatedStudent: Student = {
+      ...student,
+      peso_corporal: parsed,
+      peso_inicial: student.peso_inicial || parsed,
+      historial_peso: updatedHistory,
+    };
+
+    if (onUpdateStudent) {
+      onUpdateStudent(updatedStudent);
+    }
+    setShowWeightModal(false);
+    setNewWeightNote('');
+  };
 
   // Helpers to get number of sets for an exercise from its prescription string (e.g., "4x8" -> 4, "3x10" -> 3)
   const getPrescribedSetsCount = (item: RoutineExerciseItem, week: number): number => {
@@ -348,6 +437,47 @@ export const StudentWorkoutView: React.FC<Props> = ({
             </button>
           )}
         </div>
+
+        {/* Body Weight Control & Evolution Widget */}
+        <div className="mt-3 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-300 flex-wrap gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <Scale className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-[11px] text-slate-400 block font-medium">Control de Peso Corporal:</span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono font-bold text-white text-sm">
+                  {student.peso_corporal ? `${student.peso_corporal} kg` : 'Sin registrar'}
+                </span>
+                {student.peso_inicial && student.peso_corporal && Number(student.peso_inicial) !== Number(student.peso_corporal) && (
+                  <span
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                      Number(student.peso_corporal) < Number(student.peso_inicial)
+                        ? 'bg-emerald-500/15 text-emerald-400'
+                        : 'bg-amber-500/15 text-amber-400'
+                    }`}
+                  >
+                    {Number(student.peso_corporal) - Number(student.peso_inicial) > 0 ? '+' : ''}
+                    {(Number(student.peso_corporal) - Number(student.peso_inicial)).toFixed(1)} kg vs inicio ({student.peso_inicial}kg)
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              setNewWeightVal(student.peso_corporal?.toString() || '');
+              setShowWeightModal(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs transition active:scale-95 shadow"
+            title="Registrar nuevo pesaje para controlar mejora"
+          >
+            <Scale className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{student.peso_corporal ? 'Actualizar Peso' : '+ Registrar Peso'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Week Selector (Pills 1 to 6) */}
@@ -457,7 +587,12 @@ export const StudentWorkoutView: React.FC<Props> = ({
               const prescribedKgs = item.prescripcion?.[semanaKey]?.kgs?.trim() || '';
               const badgeStyle = getPatternBadge(item.patron);
 
-              // Get previous week reference weight
+              // Unit determination: explicit override or item.unidad or auto-detection
+              const unit = unitOverrides[item.id] || item.unidad || getExerciseUnit(item);
+              const isTime = unit === 'seg';
+              const stepDelta = isTime ? 5 : 2.5;
+
+              // Get previous week reference weight / time
               let prevWeekKgsRef = '';
               if (selectedWeek > 1) {
                 const prevLog = logs[`${student.id}_w${selectedWeek - 1}_d${selectedDayNum}_${item.ejercicio_id}_s1`];
@@ -489,13 +624,28 @@ export const StudentWorkoutView: React.FC<Props> = ({
                         >
                           {item.patron}
                         </span>
+
+                        {/* Toggle unit button (s / kg) */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleUnit(item.id)}
+                          className={`text-[10px] px-2 py-0.5 rounded-full border font-bold transition active:scale-95 flex items-center gap-1 ${
+                            isTime
+                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 hover:bg-purple-500/30'
+                              : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
+                          }`}
+                          title="Toca para cambiar si este ejercicio se mide por tiempo (segundos) o por peso (kg)"
+                        >
+                          {isTime ? '⏱️ Tiempo (s)' : '🏋️ Peso (kg)'}
+                        </button>
+
                         <span className="text-slate-400 font-mono">
                           Meta: <b className="text-slate-200">{prescriptionSeries}</b>
                         </span>
                         {prescribedKgs && (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold text-[11px] shadow-sm">
-                            <span>🏋️ Peso Facu:</span>
-                            <span className="font-mono text-amber-200 font-extrabold">{prescribedKgs} kg</span>
+                            <span>{isTime ? '⏱️ Tiempo Facu:' : '🏋️ Peso Facu:'}</span>
+                            <span className="font-mono text-amber-200 font-extrabold">{prescribedKgs} {isTime ? 's' : 'kg'}</span>
                           </span>
                         )}
                         {item.progresion && item.progresion !== prescriptionSeries && (
@@ -527,9 +677,9 @@ export const StudentWorkoutView: React.FC<Props> = ({
                   {/* Previous week reference banner if available */}
                   {prevWeekKgsRef && (
                     <div className="mb-3 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-                      <span>Semana anterior cargaste:</span>
+                      <span>{isTime ? 'Semana anterior cronometraste:' : 'Semana anterior cargaste:'}</span>
                       <span className="font-mono font-bold text-emerald-400">
-                        {prevWeekKgsRef} kg
+                        {prevWeekKgsRef} {isTime ? 's' : 'kg'}
                       </span>
                     </div>
                   )}
@@ -561,12 +711,12 @@ export const StudentWorkoutView: React.FC<Props> = ({
                             <span className="text-xs text-slate-400">Serie</span>
                           </div>
 
-                          {/* Kgs Input with steppers */}
+                          {/* Kgs / Secs Input with steppers */}
                           <div className="flex items-center gap-1.5">
                             <button
-                              onClick={() => handleAdjustWeight(item, setNum, -2.5)}
+                              onClick={() => handleAdjustWeight(item, setNum, -stepDelta)}
                               className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition active:scale-90"
-                              title="-2.5 kg"
+                              title={isTime ? "-5 seg" : "-2.5 kg"}
                             >
                               <Minus className="w-3 h-3" />
                             </button>
@@ -574,13 +724,14 @@ export const StudentWorkoutView: React.FC<Props> = ({
                             <SetWeightInput
                               initialValue={currentKgs}
                               placeholder={effectivePlaceholder}
+                              unit={unit}
                               onCommit={(newVal) => handleChangeWeight(item, setNum, newVal)}
                             />
 
                             <button
-                              onClick={() => handleAdjustWeight(item, setNum, 2.5)}
+                              onClick={() => handleAdjustWeight(item, setNum, stepDelta)}
                               className="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition active:scale-90"
-                              title="+2.5 kg"
+                              title={isTime ? "+5 seg" : "+2.5 kg"}
                             >
                               <Plus className="w-3 h-3" />
                             </button>
@@ -694,6 +845,114 @@ export const StudentWorkoutView: React.FC<Props> = ({
           <span>¿Dudas con la técnica o una carga? Escribile a Facu por WhatsApp</span>
         </a>
       </div>
+
+      {/* Body Weight Modal */}
+      {showWeightModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4 animate-in fade-in">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <Scale className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-base">Control de Peso Corporal</h3>
+                  <p className="text-xs text-slate-400">Registra tu peso para ver tu progreso con Facu</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowWeightModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveStudentWeight} className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 block mb-1.5">
+                  Peso Actual (kg)
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.1"
+                    required
+                    autoFocus
+                    placeholder="Ej: 68.5"
+                    value={newWeightVal}
+                    onChange={(e) => setNewWeightVal(e.target.value)}
+                    className="w-full pl-3 pr-12 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white font-mono text-lg font-bold focus:border-emerald-500 focus:outline-none"
+                  />
+                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400 font-bold">
+                    kg
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-300 block mb-1.5">
+                  Nota u Observación (Opcional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ej: En ayunas, post entreno, etc..."
+                  value={newWeightNote}
+                  onChange={(e) => setNewWeightNote(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs focus:border-emerald-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowWeightModal(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 font-semibold text-xs"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20"
+                >
+                  Guardar Pesaje
+                </button>
+              </div>
+            </form>
+
+            {/* Historial de Pesajes */}
+            {student.historial_peso && student.historial_peso.length > 0 && (
+              <div className="pt-3 border-t border-slate-800 space-y-2">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                  Historial de Registros ({student.historial_peso.length})
+                </span>
+                <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
+                  {[...student.historial_peso].reverse().map((rec, rIdx) => (
+                    <div
+                      key={rIdx}
+                      className="flex items-center justify-between p-2 rounded-lg bg-slate-950/70 border border-slate-800/80 text-xs"
+                    >
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] text-slate-500 block">
+                          {new Date(rec.fecha).toLocaleDateString('es-AR', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </span>
+                        {rec.nota && <span className="text-[11px] text-slate-300 italic">{rec.nota}</span>}
+                      </div>
+                      <span className="font-mono font-bold text-emerald-400 text-sm">
+                        {rec.peso} kg
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Video Modal */}
       {activeVideo && (

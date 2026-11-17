@@ -255,6 +255,10 @@ export const App: React.FC = () => {
               onSaveFeedback={handleSaveFeedback}
               onTriggerRestTimer={(seconds) => setAutoStartTimer(seconds)}
               onSyncDrive={() => handleSyncDriveForStudent(activeStudent.id)}
+              onUpdateStudent={(updatedSt) => {
+                const next = students.map((s) => (s.id === updatedSt.id ? updatedSt : s));
+                handleUpdateStudents(next);
+              }}
             />
           ) : (
             <div className="max-w-md mx-auto mt-12 p-6 bg-slate-900 border border-slate-800 rounded-2xl text-center space-y-3 shadow-xl">

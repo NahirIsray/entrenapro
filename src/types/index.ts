@@ -31,6 +31,7 @@ export interface RoutineExerciseItem {
   patron: MovementPattern | string;
   video_url: string;
   progresion: string;
+  unidad?: 'kg' | 'seg'; // 'kg' (peso/carga) o 'seg' (tiempo / segundos)
   prescripcion: {
     [semanaKey: string]: WeekPrescription; // semana_1 to semana_6
   };
@@ -54,6 +55,12 @@ export interface Routine {
   dias: RoutineDay[];
 }
 
+export interface WeightRecord {
+  fecha: string;
+  peso: number;
+  nota?: string;
+}
+
 export interface Student {
   id: string;
   nombre: string;
@@ -68,6 +75,9 @@ export interface Student {
   password?: string;
   drive_url?: string;
   ultima_sincronizacion?: string;
+  peso_corporal?: number | string;
+  peso_inicial?: number | string;
+  historial_peso?: WeightRecord[];
 }
 
 export interface SetLog {

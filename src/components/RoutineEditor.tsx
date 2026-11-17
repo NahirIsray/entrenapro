@@ -159,6 +159,34 @@ export const RoutineEditor: React.FC<Props> = ({
     });
   };
 
+  // Toggle exercise unit between 'kg' and 'seg'
+  const handleToggleItemUnit = (itemId: string) => {
+    const updatedDias = editedRoutine.dias.map((d) => {
+      if (d.dia_num === activeDayNum) {
+        return {
+          ...d,
+          items: d.items.map((it) => {
+            if (it.id === itemId) {
+              const currentUnit = it.unidad || ((it.bloque || '').toLowerCase().includes('circ') ? 'seg' : 'kg');
+              const nextUnit: 'kg' | 'seg' = currentUnit === 'kg' ? 'seg' : 'kg';
+              return {
+                ...it,
+                unidad: nextUnit,
+              };
+            }
+            return it;
+          }),
+        };
+      }
+      return d;
+    });
+
+    setEditedRoutine({
+      ...editedRoutine,
+      dias: updatedDias,
+    });
+  };
+
   const handleSaveRoutine = () => {
     onSave(editedRoutine);
     setSavedSuccess(true);
@@ -276,6 +304,20 @@ export const RoutineEditor: React.FC<Props> = ({
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
                         {it.patron}
                       </span>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleItemUnit(it.id)}
+                        className={`text-[10px] px-2 py-0.5 rounded-full border font-bold transition active:scale-95 ${
+                          (it.unidad === 'seg' || (!it.unidad && (it.bloque || '').toLowerCase().includes('circ')))
+                            ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 hover:bg-purple-500/30'
+                            : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
+                        }`}
+                        title="Toca para cambiar si este ejercicio se mide por tiempo (segundos) o por peso (kg)"
+                      >
+                        {(it.unidad === 'seg' || (!it.unidad && (it.bloque || '').toLowerCase().includes('circ')))
+                          ? '⏱️ Por Tiempo (seg)'
+                          : '🏋️ Por Peso (kg)'}
+                      </button>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -300,12 +342,13 @@ export const RoutineEditor: React.FC<Props> = ({
                     </div>
                   </div>
 
-                  {/* 6 Weeks Prescription Editor (Series & Kgs from Drive) */}
+                  {/* 6 Weeks Prescription Editor (Series & Kgs / Seconds from Drive) */}
                   <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-1 border-t border-slate-900">
                     {[1, 2, 3, 4, 5, 6].map((w) => {
                       const semKey = `semana_${w}`;
                       const currentVal = it.prescripcion?.[semKey]?.series || it.progresion || '3x10';
                       const currentKgs = it.prescripcion?.[semKey]?.kgs || '';
+                      const isItemTime = it.unidad === 'seg' || (!it.unidad && (it.bloque || '').toLowerCase().includes('circ'));
                       return (
                         <div key={w} className="bg-slate-900/60 p-1.5 rounded-lg border border-slate-800/80 space-y-1">
                           <div className="flex items-center justify-between">
@@ -314,7 +357,7 @@ export const RoutineEditor: React.FC<Props> = ({
                             </label>
                             {currentKgs && (
                               <span className="text-[10px] text-amber-400 font-bold font-mono">
-                                {currentKgs}kg
+                                {currentKgs}{isItemTime ? 's' : 'kg'}
                               </span>
                             )}
                           </div>
@@ -328,11 +371,11 @@ export const RoutineEditor: React.FC<Props> = ({
                           />
                           <input
                             type="text"
-                            placeholder="Kgs (Drive)"
+                            placeholder={isItemTime ? 'Seg (ej: 20")' : 'Kgs (ej: 40)'}
                             value={currentKgs}
                             onChange={(e) => handleUpdatePrescription(it.id, w, 'kgs', e.target.value)}
                             className="w-full px-1.5 py-0.5 bg-slate-950 border border-amber-500/30 rounded text-xs text-amber-300 font-mono"
-                            title={`Kgs objetivo para Semana ${w}`}
+                            title={isItemTime ? `Segundos objetivo para Semana ${w}` : `Kgs objetivo para Semana ${w}`}
                           />
                         </div>
                       );
